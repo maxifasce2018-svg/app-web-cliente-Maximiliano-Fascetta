@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Tienda | E-commerce</title>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html" aria-label="Inicio">
+                <img src="img/logo.svg" alt="Logo de Mi Tienda">
+            </a>
+            <ul>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#filtros">Filtros</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+            <ul>
+                <li><a href="#busqueda">Buscar</a></li>
+                <li><a href="#carrito">Carrito</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <section id="filtros" aria-label="Filtros de productos">
+            <h2>Filtrar productos</h2>
+            <form>
+                <fieldset>
+                    <legend>Categoría</legend>
+                    <ul>
+                        <li><label><input type="checkbox" name="categoria" value="ropa"> Ropa</label></li>
+                        <li><label><input type="checkbox" name="categoria" value="calzado"> Calzado</label></li>
+                        <li><label><input type="checkbox" name="categoria" value="accesorios"> Accesorios</label></li>
+                    </ul>
+                </fieldset>
+                <fieldset>
+                    <legend>Precio</legend>
+                    <label for="precio-min">Mínimo</label>
+                    <input type="number" id="precio-min" name="precio-min" min="0">
+                    <label for="precio-max">Máximo</label>
+                    <input type="number" id="precio-max" name="precio-max" min="0">
+                </fieldset>
+                <fieldset>
+                    <legend>Ordenar por</legend>
+                    <label for="orden">Orden</label>
+                    <select id="orden" name="orden">
+                        <option value="relevancia">Relevancia</option>
+                        <option value="precio-asc">Precio: menor a mayor</option>
+                        <option value="precio-desc">Precio: mayor a menor</option>
+                    </select>
+                </fieldset>
+                <button type="submit">Aplicar filtros</button>
+            </form>
+        </section>
+
+        <section id="productos" aria-label="Productos destacados">
+            <h1>Productos destacados</h1>
+            <p>Los productos más elegidos por nuestros clientes.</p>
+
+            <article>
+                <img src="img/producto1.svg" alt="Producto destacado 1">
+                <h2>Producto 1</h2>
+                <p>Descripción breve del producto 1.</p>
+                <p>Precio: $1000</p>
+                <button type="button">Agregar al carrito</button>
+            </article>
+
+            <article>
+                <img src="img/producto2.svg" alt="Producto destacado 2">
+                <h2>Producto 2</h2>
+                <p>Descripción breve del producto 2.</p>
+                <p>Precio: $2000</p>
+                <button type="button">Agregar al carrito</button>
+            </article>
+
+            <article>
+                <img src="img/producto3.svg" alt="Producto destacado 3">
+                <h2>Producto 3</h2>
+                <p>Descripción breve del producto 3.</p>
+                <p>Precio: $3000</p>
+                <button type="button">Agregar al carrito</button>
+            </article>
+        </section>
+
+    </main>
+
+    <footer id="contacto">
+        <section aria-label="Información de contacto">
+            <h2>Contacto</h2>
+            <address>
+                <p>Email: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
+                <p>Teléfono: <a href="tel:+540000000000">+54 000 000-0000</a></p>
+            </address>
+        </section>
+        <p>&copy; 2026 Mi Tienda. Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>
