@@ -3,100 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Tienda | E-commerce</title>
+    <title>El Centro Pokécard</title>
 </head>
 <body>
 
     <header>
+        <h1>El Centro Pokécard</h1>
+        <p>Tu tienda online de cartas Pokémon oficiales</p>
         <nav>
-            <a href="index.html" aria-label="Inicio">
-                <img src="img/logo.svg" alt="Logo de Mi Tienda">
-            </a>
             <ul>
-                <li><a href="#productos">Productos</a></li>
-                <li><a href="#filtros">Filtros</a></li>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#catalogo">Catálogo</a></li>
+                <li><a href="#colecciones">Colecciones</a></li>
+                <li><a href="#ofertas">Ofertas</a></li>
                 <li><a href="#contacto">Contacto</a></li>
-            </ul>
-            <ul>
-                <li><a href="#busqueda">Buscar</a></li>
-                <li><a href="#carrito">Carrito</a></li>
             </ul>
         </nav>
     </header>
 
     <main>
-
-        <section id="filtros" aria-label="Filtros de productos">
-            <h2>Filtrar productos</h2>
+        <aside>
+            <h2>Filtrar por Categoría</h2>
             <form>
                 <fieldset>
-                    <legend>Categoría</legend>
-                    <ul>
-                        <li><label><input type="checkbox" name="categoria" value="ropa"> Ropa</label></li>
-                        <li><label><input type="checkbox" name="categoria" value="calzado"> Calzado</label></li>
-                        <li><label><input type="checkbox" name="categoria" value="accesorios"> Accesorios</label></li>
-                    </ul>
+                    <legend>Tipo de Producto</legend>
+                    <div>
+                        <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
+                        <label for="cat-box">Booster Box</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
+                        <label for="cat-pack">Booster Pack</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="cat-base" name="categoria" value="base-set">
+                        <label for="cat-base">Base Set</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="cat-etb" name="categoria" value="etb">
+                        <label for="cat-etb">Elite Trainer Box (ETB)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="cat-sobre" name="categoria" value="sobre">
+                        <label for="cat-sobre">Sobre / Caja Individual</label>
+                    </div>
                 </fieldset>
+
                 <fieldset>
-                    <legend>Precio</legend>
-                    <label for="precio-min">Mínimo</label>
-                    <input type="number" id="precio-min" name="precio-min" min="0">
-                    <label for="precio-max">Máximo</label>
-                    <input type="number" id="precio-max" name="precio-max" min="0">
-                </fieldset>
-                <fieldset>
-                    <legend>Ordenar por</legend>
-                    <label for="orden">Orden</label>
-                    <select id="orden" name="orden">
-                        <option value="relevancia">Relevancia</option>
-                        <option value="precio-asc">Precio: menor a mayor</option>
-                        <option value="precio-desc">Precio: mayor a menor</option>
+                    <legend>Colección</legend>
+                    <select name="coleccion" id="coleccion">
+                        <option value="">Todas las colecciones</option>
+                        <option value="scarlet-violet">Scarlet & Violet</option>
+                        <option value="sword-shield">Sword & Shield</option>
+                        <option value="cosmic-eclipse">Cosmic Eclipse</option>
+                        <option value="obsidian-flames">Obsidian Flames</option>
+                        <option value="evolving-skies">Evolving Skies</option>
+                        <option value="surging-sparks">Surging Sparks</option>
                     </select>
                 </fieldset>
-                <button type="submit">Aplicar filtros</button>
+
+                <fieldset>
+                    <legend>Precio</legend>
+                    <div>
+                        <input type="radio" id="precio-todo" name="precio" value="todo" checked>
+                        <label for="precio-todo">Todos los precios</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="precio-bajo" name="precio" value="bajo">
+                        <label for="precio-bajo">Menos de $50 USD</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="precio-medio" name="precio" value="medio">
+                        <label for="precio-medio">$50 - $200 USD</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="precio-alto" name="precio" value="alto">
+                        <label for="precio-alto">Más de $200 USD</label>
+                    </div>
+                </fieldset>
+
+                <button type="submit">Aplicar Filtros</button>
+                <button type="reset">Limpiar Filtros</button>
             </form>
+        </aside>
+
+        <section id="catalogo">
+            <h2>Catálogo de Productos</h2>
+
+            <article>
+                <h3>Scarlet & Violet Base Set Booster Box</h3>
+                <p>Caja completa de 36 sobres del Set Base de Pokémon Scarlet & Violet. Incluye cartas raras y holográficas exclusivas de la nueva generación.</p>
+                <p><strong>Precio:</strong> $175 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del booster box]</p>
+                <img src="#" alt="Scarlet & Violet Base Set Booster Box" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Booster Pack Surging Sparks (10 sobres)</h3>
+                <p>Overdrive de Pokémon TCG Surging Sparks. Paquete de 10 sobres con nuevos Pokémon exlegendarios y cartas increíblemente poderosas.</p>
+                <p><strong>Precio:</strong> $89 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del booster pack]</p>
+                <img src="#" alt="Booster Pack Surging Sparks" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Base Set Cosmic Eclipse (36 sobres)</h3>
+                <p>Caja de colección del Set Base Cosmic Eclipse. Contiene 36 sobres de 10 cartas cada uno con Pokémon legendarios como Zacian y Zamazenta.</p>
+                <p><strong>Precio:</strong> $130 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del base set]</p>
+                <img src="#" alt="Base Set Cosmic Eclipse" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Obsidian Flames Elite Trainer Box</h3>
+                <p>Caja de entrenador Elite Trainer Box de Obsidian Flames. Incluye 9 sobres, contador de puntos, dados, cartas de jugador y más.</p>
+                <p><strong>Precio:</strong> $110 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del ETB]</p>
+                <img src="#" alt="Obsidian Flames Elite Trainer Box" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Scarlet & Violet Booster Pack (1 sobre)</h3>
+                <p>Sobre individual del Pokémon TCG Scarlet & Violet. Cada sobre contiene 10 cartas aleatorias, incluyendo posibles cartas secretas.</p>
+                <p><strong>Precio:</strong> $30 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del sobre]</p>
+                <img src="#" alt="Scarlet & Violet Booster Pack" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Evolving Skies Elite Trainer Box</h3>
+                <p>Caja de entrenador completa de Evolving Skies. Incluye 9 sobres, tarjetas de árbol de premios, marcadores de daño, dado y carta de jugador exclusiva.</p>
+                <p><strong>Precio:</strong> $105 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del ETB]</p>
+                <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Evolving Skies Elite Trainer Box" width="200" height="200">
+            </article>
+
+            <article>
+                <h3>Sword & Shield Base Set Booster Box</h3>
+                <p>Caja de 36 sobres del Set Base Sword & Shield. Contiene cartas de la primera generación de la octava generación con Galarian Pokémon y formas Gigamax.</p>
+                <p><strong>Precio:</strong> $140 USD</p>
+                <p><strong>Imagen:</strong> [Espacio para imagen del booster box]</p>
+                <img src="#" alt="Sword & Shield Base Set Booster Box" width="200" height="200">
+            </article>
         </section>
-
-        <section id="productos" aria-label="Productos destacados">
-            <h1>Productos destacados</h1>
-            <p>Los productos más elegidos por nuestros clientes.</p>
-
-            <article>
-                <img src="img/producto1.svg" alt="Producto destacado 1">
-                <h2>Producto 1</h2>
-                <p>Descripción breve del producto 1.</p>
-                <p>Precio: $1000</p>
-                <button type="button">Agregar al carrito</button>
-            </article>
-
-            <article>
-                <img src="img/producto2.svg" alt="Producto destacado 2">
-                <h2>Producto 2</h2>
-                <p>Descripción breve del producto 2.</p>
-                <p>Precio: $2000</p>
-                <button type="button">Agregar al carrito</button>
-            </article>
-
-            <article>
-                <img src="img/producto3.svg" alt="Producto destacado 3">
-                <h2>Producto 3</h2>
-                <p>Descripción breve del producto 3.</p>
-                <p>Precio: $3000</p>
-                <button type="button">Agregar al carrito</button>
-            </article>
-        </section>
-
     </main>
 
-    <footer id="contacto">
-        <section aria-label="Información de contacto">
-            <h2>Contacto</h2>
-            <address>
-                <p>Email: <a href="mailto:contacto@mitienda.com">contacto@mitienda.com</a></p>
-                <p>Teléfono: <a href="tel:+540000000000">+54 000 000-0000</a></p>
-            </address>
-        </section>
-        <p>&copy; 2026 Mi Tienda. Todos los derechos reservados.</p>
+    <footer>
+        <p>&copy; 2024 El Centro Pokécard - Tienda Oficial de Cartas Pokémon</p>
+        <nav>
+            <h2>Síguenos en Redes Sociales</h2>
+            <ul>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Twitter / X</a></li>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">YouTube</a></li>
+                <li><a href="#">TikTok</a></li>
+            </ul>
+        </nav>
     </footer>
 
 </body>
