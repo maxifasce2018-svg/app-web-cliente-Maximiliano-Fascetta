@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Centro Pokécard</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header>
-        <h1>El Centro Pokécard</h1>
-        <p>Tu tienda online de cartas Pokémon oficiales</p>
-        <nav>
-            <ul>
+    <header class="page-header">
+        <h1 class="header-title">El Centro Pokécard</h1>
+        <p class="header-subtitle">Tu tienda online de cartas Pokémon oficiales</p>
+        <nav class="header-nav">
+            <ul class="nav-list">
                 <li><a href="#inicio">Inicio</a></li>
                 <li><a href="#catalogo">Catálogo</a></li>
                 <li><a href="#colecciones">Colecciones</a></li>
@@ -21,37 +22,37 @@
         </nav>
     </header>
 
-    <main>
-        <aside>
+    <main class="page-main">
+        <aside class="sidebar">
             <h2>Filtrar por Categoría</h2>
-            <form>
-                <fieldset>
-                    <legend>Tipo de Producto</legend>
-                    <div>
+            <form class="filter-form" action="#" method="get">
+                <fieldset class="filter-fieldset">
+                    <legend class="filter-legend">Tipo de Producto</legend>
+                    <div class="filter-option">
                         <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
                         <label for="cat-box">Booster Box</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
                         <label for="cat-pack">Booster Pack</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="checkbox" id="cat-base" name="categoria" value="base-set">
                         <label for="cat-base">Base Set</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="checkbox" id="cat-etb" name="categoria" value="etb">
                         <label for="cat-etb">Elite Trainer Box (ETB)</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="checkbox" id="cat-sobre" name="categoria" value="sobre">
                         <label for="cat-sobre">Sobre / Caja Individual</label>
                     </div>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Colección</legend>
-                    <select name="coleccion" id="coleccion">
+                <fieldset class="filter-fieldset">
+                    <legend class="filter-legend">Colección</legend>
+                    <select class="filter-select" name="coleccion" id="coleccion">
                         <option value="">Todas las colecciones</option>
                         <option value="scarlet-violet">Scarlet & Violet</option>
                         <option value="sword-shield">Sword & Shield</option>
@@ -62,97 +63,129 @@
                     </select>
                 </fieldset>
 
-                <fieldset>
-                    <legend>Precio</legend>
-                    <div>
+                <fieldset class="filter-fieldset">
+                    <legend class="filter-legend">Precio</legend>
+                    <div class="filter-option">
                         <input type="radio" id="precio-todo" name="precio" value="todo" checked>
                         <label for="precio-todo">Todos los precios</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="radio" id="precio-bajo" name="precio" value="bajo">
                         <label for="precio-bajo">Menos de $50 USD</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="radio" id="precio-medio" name="precio" value="medio">
                         <label for="precio-medio">$50 - $200 USD</label>
                     </div>
-                    <div>
+                    <div class="filter-option">
                         <input type="radio" id="precio-alto" name="precio" value="alto">
                         <label for="precio-alto">Más de $200 USD</label>
                     </div>
                 </fieldset>
 
-                <button type="submit">Aplicar Filtros</button>
-                <button type="reset">Limpiar Filtros</button>
+                <button type="submit" class="btn-apply">Aplicar Filtros</button>
+                <button type="reset" class="btn-reset">Limpiar Filtros</button>
             </form>
         </aside>
 
-        <section id="catalogo">
+        <section class="catalog" id="catalogo">
             <h2>Catálogo de Productos</h2>
 
-            <article>
-                <h3>Scarlet & Violet Base Set Booster Box</h3>
-                <p>Caja completa de 36 sobres del Set Base de Pokémon Scarlet & Violet. Incluye cartas raras y holográficas exclusivas de la nueva generación.</p>
-                <p><strong>Precio:</strong> $175 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del booster box]</p>
-                <img src="#" alt="Scarlet & Violet Base Set Booster Box" width="200" height="200">
-            </article>
+            <div class="product-grid">
 
-            <article>
-                <h3>Booster Pack Surging Sparks (10 sobres)</h3>
-                <p>Overdrive de Pokémon TCG Surging Sparks. Paquete de 10 sobres con nuevos Pokémon exlegendarios y cartas increíblemente poderosas.</p>
-                <p><strong>Precio:</strong> $89 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del booster pack]</p>
-                <img src="#" alt="Booster Pack Surging Sparks" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRVKXM8KTMxEw57W2cutLqUM2tHIE3wSgrhK0XVe79GpDvisS19YDExq9iu&s=10" alt="Scarlet & Violet Base Set Booster Box">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Scarlet & Violet Base Set Booster Box</h3>
+                        <p class="product-description">Caja completa de 36 sobres del Set Base de Pokémon Scarlet & Violet. Incluye cartas raras y holográficas exclusivas de la nueva generación.</p>
+                        <p class="product-price">$175 USD</p>
+                        <a href="producto-scarlet-violet-booster-box.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Base Set Cosmic Eclipse (36 sobres)</h3>
-                <p>Caja de colección del Set Base Cosmic Eclipse. Contiene 36 sobres de 10 cartas cada uno con Pokémon legendarios como Zacian y Zamazenta.</p>
-                <p><strong>Precio:</strong> $130 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del base set]</p>
-                <img src="#" alt="Base Set Cosmic Eclipse" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://d22fxaf9t8d39k.cloudfront.net/ec1f81d03a67758840996b6a5c060aa447c35ed3b5a47624ca85abfe3cd2c427360839.jpg" alt="Booster Pack Surging Sparks">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Booster Pack Surging Sparks (6 sobres)</h3>
+                        <p class="product-description">Overdrive de Pokémon TCG Surging Sparks. Paquete de 6 sobres con nuevos Pokémon exlegendarios y cartas increíblemente poderosas.</p>
+                        <p class="product-price">$89 USD</p>
+                        <a href="producto-surging-sparks-pack.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Obsidian Flames Elite Trainer Box</h3>
-                <p>Caja de entrenador Elite Trainer Box de Obsidian Flames. Incluye 9 sobres, contador de puntos, dados, cartas de jugador y más.</p>
-                <p><strong>Precio:</strong> $110 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del ETB]</p>
-                <img src="#" alt="Obsidian Flames Elite Trainer Box" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Base Set Cosmic Eclipse">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Base Set Cosmic Eclipse (36 sobres)</h3>
+                        <p class="product-description">Caja de colección del Set Base Cosmic Eclipse. Contiene 36 sobres de 10 cartas cada uno con Pokémon legendarios como Zacian y Zamazenta.</p>
+                        <p class="product-price">$130 USD</p>
+                        <a href="producto-cosmic-eclipse-baseset.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Scarlet & Violet Booster Pack (1 sobre)</h3>
-                <p>Sobre individual del Pokémon TCG Scarlet & Violet. Cada sobre contiene 10 cartas aleatorias, incluyendo posibles cartas secretas.</p>
-                <p><strong>Precio:</strong> $30 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del sobre]</p>
-                <img src="#" alt="Scarlet & Violet Booster Pack" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Obsidian Flames Elite Trainer Box">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Obsidian Flames Elite Trainer Box</h3>
+                        <p class="product-description">Caja de entrenador Elite Trainer Box de Obsidian Flames. Incluye 9 sobres, contador de puntos, dados, cartas de jugador y más.</p>
+                        <p class="product-price">$110 USD</p>
+                        <a href="producto-obsidian-flames-etb.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Evolving Skies Elite Trainer Box</h3>
-                <p>Caja de entrenador completa de Evolving Skies. Incluye 9 sobres, tarjetas de árbol de premios, marcadores de daño, dado y carta de jugador exclusiva.</p>
-                <p><strong>Precio:</strong> $105 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del ETB]</p>
-                <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Evolving Skies Elite Trainer Box" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Scarlet & Violet Booster Pack">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Scarlet & Violet Booster Pack (1 sobre)</h3>
+                        <p class="product-description">Sobre individual del Pokémon TCG Scarlet & Violet. Cada sobre contiene 10 cartas aleatorias, incluyendo posibles cartas secretas.</p>
+                        <p class="product-price">$30 USD</p>
+                        <a href="producto-scarlet-violet-overse.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
 
-            <article>
-                <h3>Sword & Shield Base Set Booster Box</h3>
-                <p>Caja de 36 sobres del Set Base Sword & Shield. Contiene cartas de la primera generación de la octava generación con Galarian Pokémon y formas Gigamax.</p>
-                <p><strong>Precio:</strong> $140 USD</p>
-                <p><strong>Imagen:</strong> [Espacio para imagen del booster box]</p>
-                <img src="#" alt="Sword & Shield Base Set Booster Box" width="200" height="200">
-            </article>
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Evolving Skies Elite Trainer Box">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Evolving Skies Elite Trainer Box</h3>
+                        <p class="product-description">Caja de entrenador completa de Evolving Skies. Incluye 9 sobres, tarjetas de árbol de premios, marcadores de daño, dado y carta de jugador exclusiva.</p>
+                        <p class="product-price">$105 USD</p>
+                        <a href="producto-evolving-skies-etb.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
+
+                <article class="product-card">
+                    <div class="product-image">
+                        <img src="https://acdn-us.mitiendanube.com/stores/004/821/233/products/71hxtsvmfrl-_ac_sl1500_sky-51a8b3183b638ea42c17831712703312-480-0.webp" alt="Sword & Shield Base Set Booster Box">
+                    </div>
+                    <div class="product-body">
+                        <h3 class="product-title">Sword & Shield Base Set Booster Box</h3>
+                        <p class="product-description">Caja de 36 sobres del Set Base Sword & Shield. Contiene cartas de la primera generación de la octava generación con Galarian Pokémon y formas Gigamax.</p>
+                        <p class="product-price">$140 USD</p>
+                        <a href="producto-sword-shield-booster-box.html" class="product-link">Ver Detalle</a>
+                    </div>
+                </article>
+
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2024 El Centro Pokécard - Tienda Oficial de Cartas Pokémon</p>
-        <nav>
+    <footer class="page-footer">
+        <p class="footer-copy">&copy; 2024 El Centro Pokécard - Tienda Oficial de Cartas Pokémon</p>
+        <nav class="footer-social">
             <h2>Síguenos en Redes Sociales</h2>
-            <ul>
+            <ul class="social-list">
                 <li><a href="#">Facebook</a></li>
                 <li><a href="#">Twitter / X</a></li>
                 <li><a href="#">Instagram</a></li>
