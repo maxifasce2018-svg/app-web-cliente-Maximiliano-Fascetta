@@ -1,5 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
+/* ========== COLOR PALETTE ========== */
+:root {
+    /* Backgrounds */
+    --color-bg-primary: #1a1a2e;
+    --color-bg-secondary: #16213e;
+    --color-bg-tertiary: #0f3460;
+    --color-bg-input: #0f3460;
+    --color-bg-select: #0f3460;
+
+    /* Text */
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #a0a0b0;
+    --color-text-tertiary: #b0b0c0;
+    --color-text-link: #c0c0c0;
+    --color-text-heading: #ffffff;
+    --color-text-nav: #c0c0d0;
+
+    /* Accent / Brand */
+    --color-accent: #e94560;
+    --color-accent-hover: #c73650;
+    --color-accent-active: #a02a40;
+
+    /* Borders */
+    --color-border: #0f3460;
+    --color-border-light: #1a3a6e;
+    --color-border-select: #1a1a3e;
+}
+
 * {
     margin: 0;
     padding: 0;
