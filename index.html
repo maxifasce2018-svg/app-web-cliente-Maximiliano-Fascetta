@@ -65,21 +65,15 @@
 
                 <fieldset class="filter-fieldset">
                     <legend class="filter-legend">Precio</legend>
-                    <div class="filter-option">
-                        <input type="radio" id="precio-todo" name="precio" value="todo" checked>
-                        <label for="precio-todo">Todos los precios</label>
+                    <div class="range-group">
+                        <label for="precio-min">Precio mínimo</label>
+                        <input type="range" id="precio-min" name="precio_min" min="0" max="500" value="0" step="5">
+                        <span class="range-value" id="precio-min-val">$0</span>
                     </div>
-                    <div class="filter-option">
-                        <input type="radio" id="precio-bajo" name="precio" value="bajo">
-                        <label for="precio-bajo">Menos de $50 USD</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="radio" id="precio-medio" name="precio" value="medio">
-                        <label for="precio-medio">$50 - $200 USD</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="radio" id="precio-alto" name="precio" value="alto">
-                        <label for="precio-alto">Más de $200 USD</label>
+                    <div class="range-group">
+                        <label for="precio-max">Precio máximo</label>
+                        <input type="range" id="precio-max" name="precio_max" min="0" max="500" value="500" step="5">
+                        <span class="range-value" id="precio-max-val">$500</span>
                     </div>
                 </fieldset>
 
@@ -90,6 +84,12 @@
 
         <section class="catalog" id="catalogo">
             <h2>Catálogo de Productos</h2>
+
+            <form class="search-bar" action="#" method="get" role="search">
+                <label for="producto-search" class="sr-only">Buscar productos</label>
+                <input type="search" id="producto-search" name="buscar" class="search-input" placeholder="Buscar productos..." minlength="2" maxlength="100" autocomplete="off">
+                <button type="submit" class="search-btn">Buscar</button>
+            </form>
 
             <div class="product-grid">
 
