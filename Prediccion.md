@@ -7,3 +7,5 @@ cetral y footer, sobre una tienda de cartas.
 3.Quiero crear el apartado para la paleta de colores en css 
 
 4.Quiero mejorar un poco el apartado de filtro de precios y ademas añadir una parte para buscar productos por nombre.
+
+5. Termino de poner las fotos correspondientes de cada producto a mano 
