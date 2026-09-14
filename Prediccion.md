@@ -13,3 +13,5 @@ cetral y footer, sobre una tienda de cartas.
 6.Quiero crear el apartado de carrito con todo lo que neceste ya sea el detalle, boton de pagar y añadir algun icono/texto para entrar en ese apartado desde la paguina principal
 
 7.Quiero mejorar el boton de filtros tal que cuando lo toque se despliege los filtros no que todo el tiempo este activo. Y tmb aplicarle css.
+
+8.Mejora del fondo para que no se vea plano ya que no me gusta la idea es mejorarlo y que se vea mas dinamico y fluido.
