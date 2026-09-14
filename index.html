@@ -27,62 +27,66 @@
 
     <main class="page-main">
         <aside class="sidebar">
-            <h2>Filtrar por Categoría</h2>
-            <form class="filter-form" action="#" method="get">
-                <fieldset class="filter-fieldset">
-                    <legend class="filter-legend">Tipo de Producto</legend>
-                    <div class="filter-option">
-                        <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
-                        <label for="cat-box">Booster Box</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
-                        <label for="cat-pack">Booster Pack</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="cat-base" name="categoria" value="base-set">
-                        <label for="cat-base">Base Set</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="cat-etb" name="categoria" value="etb">
-                        <label for="cat-etb">Elite Trainer Box (ETB)</label>
-                    </div>
-                    <div class="filter-option">
-                        <input type="checkbox" id="cat-sobre" name="categoria" value="sobre">
-                        <label for="cat-sobre">Sobre / Caja Individual</label>
-                    </div>
-                </fieldset>
+            <details class="filter-details">
+                <summary class="filter-summary">
+                    <h2>Filtrar por Categoría</h2>
+                </summary>
+                <form class="filter-form" action="#" method="get">
+                    <fieldset class="filter-fieldset">
+                        <legend class="filter-legend">Tipo de Producto</legend>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
+                            <label for="cat-box">Booster Box</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
+                            <label for="cat-pack">Booster Pack</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-base" name="categoria" value="base-set">
+                            <label for="cat-base">Base Set</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-etb" name="categoria" value="etb">
+                            <label for="cat-etb">Elite Trainer Box (ETB)</label>
+                        </div>
+                        <div class="filter-option">
+                            <input type="checkbox" id="cat-sobre" name="categoria" value="sobre">
+                            <label for="cat-sobre">Sobre / Caja Individual</label>
+                        </div>
+                    </fieldset>
 
-                <fieldset class="filter-fieldset">
-                    <legend class="filter-legend">Colección</legend>
-                    <select class="filter-select" name="coleccion" id="coleccion">
-                        <option value="">Todas las colecciones</option>
-                        <option value="scarlet-violet">Scarlet & Violet</option>
-                        <option value="sword-shield">Sword & Shield</option>
-                        <option value="cosmic-eclipse">Cosmic Eclipse</option>
-                        <option value="obsidian-flames">Obsidian Flames</option>
-                        <option value="evolving-skies">Evolving Skies</option>
-                        <option value="surging-sparks">Surging Sparks</option>
-                    </select>
-                </fieldset>
+                    <fieldset class="filter-fieldset">
+                        <legend class="filter-legend">Colección</legend>
+                        <select class="filter-select" name="coleccion" id="coleccion">
+                            <option value="">Todas las colecciones</option>
+                            <option value="scarlet-violet">Scarlet & Violet</option>
+                            <option value="sword-shield">Sword & Shield</option>
+                            <option value="cosmic-eclipse">Cosmic Eclipse</option>
+                            <option value="obsidian-flames">Obsidian Flames</option>
+                            <option value="evolving-skies">Evolving Skies</option>
+                            <option value="surging-sparks">Surging Sparks</option>
+                        </select>
+                    </fieldset>
 
-                <fieldset class="filter-fieldset">
-                    <legend class="filter-legend">Precio</legend>
-                    <div class="range-group">
-                        <label for="precio-min">Precio mínimo</label>
-                        <input type="range" id="precio-min" name="precio_min" min="0" max="500" value="0" step="5">
-                        <span class="range-value" id="precio-min-val">$0</span>
-                    </div>
-                    <div class="range-group">
-                        <label for="precio-max">Precio máximo</label>
-                        <input type="range" id="precio-max" name="precio_max" min="0" max="500" value="500" step="5">
-                        <span class="range-value" id="precio-max-val">$500</span>
-                    </div>
-                </fieldset>
+                    <fieldset class="filter-fieldset">
+                        <legend class="filter-legend">Precio</legend>
+                        <div class="range-group">
+                            <label for="precio-min">Precio mínimo</label>
+                            <input type="range" id="precio-min" name="precio_min" min="0" max="500" value="0" step="5">
+                            <span class="range-value" id="precio-min-val">$0</span>
+                        </div>
+                        <div class="range-group">
+                            <label for="precio-max">Precio máximo</label>
+                            <input type="range" id="precio-max" name="precio_max" min="0" max="500" value="500" step="5">
+                            <span class="range-value" id="precio-max-val">$500</span>
+                        </div>
+                    </fieldset>
 
-                <button type="submit" class="btn-apply">Aplicar Filtros</button>
-                <button type="reset" class="btn-reset">Limpiar Filtros</button>
-            </form>
+                    <button type="submit" class="btn-apply">Aplicar Filtros</button>
+                    <button type="reset" class="btn-reset">Limpiar Filtros</button>
+                </form>
+            </details>
         </aside>
 
         <section class="catalog" id="catalogo">
