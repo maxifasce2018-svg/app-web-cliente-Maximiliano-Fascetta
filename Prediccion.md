@@ -15,3 +15,5 @@ cetral y footer, sobre una tienda de cartas.
 7.Quiero mejorar el boton de filtros tal que cuando lo toque se despliege los filtros no que todo el tiempo este activo. Y tmb aplicarle css.
 
 8.Mejora del fondo para que no se vea plano ya que no me gusta la idea es mejorarlo y que se vea mas dinamico y fluido.
+
+9.Quiero mejorar un poco el apartado de productos y mejoras visuales de los productos y titulos.

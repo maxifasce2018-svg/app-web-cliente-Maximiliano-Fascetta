@@ -19,13 +19,15 @@
                 <li><a href="#ofertas">Ofertas</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
+            <ul class="nav-list nav-cart-list">
+                <li><a href="cart.html" title="Ver carrito de compras"><img class="pokeball-icon" src="https://upload.wikimedia.org/wikipedia/commons/5/51/Pokebola-pokeball-png-0.png" alt=""> Carrito</a></li>
+            </ul>
         </nav>
     </header>
 
     <main class="detail-container">
         <div class="detail-page-header">
             <a href="index.html#catalogo" class="back-link">← Volver al Catálogo</a>
-            <h1 class="detail-title">Booster Pack Surging Sparks (6 sobres)</h1>
         </div>
 
         <article class="detail-card">
@@ -35,37 +37,49 @@
             <div class="detail-body">
                 <h2 class="detail-title">Booster Pack Surging Sparks (6 sobres)</h2>
 
-                <div class="detail-row">
+                <div class="product-badges">
+                    <span class="badge">Idioma: Español / Inglés</span>
+                    <span class="badge">Estado: Nuevo / Precintado</span>
+                    <span class="badge">100% Original</span>
+                </div>
+
+                <div class="detail-row price-row">
                     <span class="detail-label">Precio:</span>
                     <span class="detail-value price">$89 USD</span>
                 </div>
 
-                <div class="detail-row">
-                    <span class="detail-label">Idioma:</span>
-                    <span class="detail-value">Español / Inglés / Francés / Alemán / Italiano</span>
-                </div>
+                <details class="product-accordion">
+                    <summary class="accordion-summary">Especificaciones Técnicas</summary>
+                    <div class="accordion-content">
+                        <div class="detail-row">
+                            <span class="detail-label">Categoría:</span>
+                            <span class="detail-value">Booster Pack</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Colección:</span>
+                            <span class="detail-value">Surging Sparks</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Contenido:</span>
+                            <span class="detail-value">6 sobres</span>
+                        </div>
+                    </div>
+                </details>
 
-                <div class="detail-row">
-                    <span class="detail-label">Categoría:</span>
-                    <span class="detail-value">Booster Pack</span>
-                </div>
+                <details class="product-accordion">
+                    <summary class="accordion-summary">Descripción del Producto</summary>
+                    <div class="accordion-content">
+                        <p class="detail-description-text">Overdrive de Pokémon TCG Surging Sparks. Paquete de 6 sobres con nuevos Pokémon exlegendarios y cartas increíblemente poderosas. Cada sobre incluye 10 cartas aleatorias con la posibilidad de encontrar cartas brillantes y raras exclusivas de esta expansión. Surging Sparks trae consigo criaturas legendarias y mecánicas de juego innovadoras que potenciarán tu deck.</p>
+                    </div>
+                </details>
 
-                <div class="detail-row">
-                    <span class="detail-label">Colección:</span>
-                    <span class="detail-value">Surging Sparks</span>
-                </div>
-
-                <div class="detail-row">
-                    <span class="detail-label">Cantidad:</span>
-                    <span class="detail-value">6 sobres</span>
-                </div>
-
-                <div class="detail-description">
-                    <h3>Detalle del Producto</h3>
-                    <p>Overdrive de Pokémon TCG Surging Sparks. Paquete de 6 sobres con nuevos Pokémon exlegendarios y cartas increíblemente poderosas. Cada sobre incluye 10 cartas aleatorias con la posibilidad de encontrar cartas brillantes y raras exclusivas de esta expansión. Surging Sparks trae consigo criaturas legendarias y mecánicas de juego innovadoras que potenciarán tu deck.</p>
-                </div>
-
-                <button class="add-to-cart-btn">Añadir al Carrito</button>
+                <form class="add-to-cart-form" action="cart.html" method="get">
+                    <div class="quantity-selector">
+                        <label for="cantidad">Cantidad:</label>
+                        <input type="number" id="cantidad" name="cantidad" value="1" min="1" max="20">
+                    </div>
+                    <button type="submit" class="add-to-cart-btn">Añadir al Carrito</button>
+                </form>
             </div>
         </article>
     </main>
