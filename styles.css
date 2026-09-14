@@ -39,6 +39,41 @@ body {
     background-color: #1a1a2e;
     color: #e0e0e0;
     line-height: 1.6;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* Animación para que gire el fondo */
+@keyframes spinBackground {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Capa inferior: Patrón de marca de agua */
+body::before {
+    content: "";
+    position: fixed;
+    /* Hacemos la capa el doble de grande para que al girar no queden huecos en las esquinas */
+    top: -50vh; left: -50vw; 
+    width: 200vw; height: 200vh;
+    background-image: url('https://cdn.pixabay.com/photo/2016/07/23/13/18/pokemon-1536847_640.png');
+    background-size: 150px 150px;
+    background-repeat: repeat;
+    opacity: 0.04; /* Muy transparente para no molestar */
+    z-index: -2;
+    /* Aplicamos la animación: 120 segundos, continuo e infinito */
+    animation: spinBackground 120s linear infinite;
+}
+
+/* Capa superior: Foco de luz (Degradado radial) */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; 
+    width: 100%; height: 100%;
+    background-image: radial-gradient(circle at top center, rgba(22, 33, 62, 0) 0%, #1a1a2e 85%);
+    pointer-events: none; /* Importante para poder clickear los elementos debajo */
+    z-index: -1;
 }
 
 a {
