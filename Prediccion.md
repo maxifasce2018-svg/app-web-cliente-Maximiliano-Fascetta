@@ -29,3 +29,5 @@ cetral y footer, sobre una tienda de cartas.
 14.Quiero agregar las paguinas de inicio de secion y ademas la de reguistro
 
 15.Quiero agregar el apartado de contacto
+
+16.Quiero hacer arreglos generales
