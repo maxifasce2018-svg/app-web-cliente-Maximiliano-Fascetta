@@ -27,3 +27,5 @@ cetral y footer, sobre una tienda de cartas.
 13.Quiero mostrar las ventajas de la tienda de forma visual (envío, originalidad, etc.) como hacen las tiendas reales. Genera confianza y se ve muy profesional.
 
 14.Quiero agregar las paguinas de inicio de secion y ademas la de reguistro
+
+15.Quiero agregar el apartado de contacto
