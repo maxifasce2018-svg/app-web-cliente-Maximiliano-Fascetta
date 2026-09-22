@@ -1743,3 +1743,83 @@ a:hover {
         gap: 0;
     }
 }
+
+/* ==========================================================
+   26. MOBILE MENU (HAMBURGER) - TRUCO DEL CHECKBOX
+   ========================================================== */
+
+/* 1. Ocultar el input checkbox siempre */
+.menu-toggle-input {
+    display: none;
+}
+
+/* 2. Ocultar la barra y menú móvil en pantallas grandes (escritorio) */
+.mobile-menu-bar {
+    display: none; 
+}
+
+@media (max-width: 768px) {
+    /* 3. Mostrar la barra de control (botón hamburguesa y carrito) en celular */
+    .mobile-menu-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        margin-top: 15px;
+        border-top: 1px solid #0f3460;
+    }
+
+    /* 4. Estilizar el label para que actúe como botón hamburguesa */
+    .menu-toggle-label {
+        color: #e94560;
+        font-size: 1.8rem;
+        cursor: pointer;
+        user-select: none;
+        padding: 5px;
+    }
+
+    /* 5. El ícono ☰ por defecto usando content */
+    .menu-toggle-label::before {
+        content: '\2630'; /* Código unicode de ☰ */
+    }
+
+    /* 6. Cuando el menú está desplegado (checked), cambiar el ícono a ✕ */
+    /* Como el checkbox es hermano previo de .mobile-menu-bar, usamos el selector general ~ */
+    .menu-toggle-input:checked ~ .mobile-menu-bar .menu-toggle-label::before {
+        content: '\2715'; /* Código unicode de ✕ */
+    }
+
+    /* 7. Estilos del botón de carrito independiente de la navegación */
+    .mobile-cart-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #e94560;
+        font-weight: 700;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    /* 8. Ocultar el carrito viejo dentro del menú para que no esté duplicado en mobile */
+    .page-header .nav-actions-list li:last-child {
+        display: none;
+    }
+
+    /* 9. Configuración inicial del nav (Oculto, altura cero) */
+    /* Usamos mayor especificidad para sobreescribir estilos anteriores */
+    .page-header .header-nav {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-in-out;
+        padding: 0;
+        margin: 0;
+        border-top: none;
+    }
+
+    /* 10. Desplegar el menú cuando el checkbox está chequeado (checked) */
+    .menu-toggle-input:checked ~ .header-nav {
+        max-height: 500px;
+        padding: 15px 0; /* Restaurar el padding */
+        border-top: 1px solid #0f3460;
+    }
+}
