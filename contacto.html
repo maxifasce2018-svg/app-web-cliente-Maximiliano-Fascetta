@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - El Centro Pokécard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header class="page-header">
+        <h1 class="header-title">El Centro Pokécard</h1>
+        <p class="header-subtitle">Tu tienda online de cartas Pokémon oficiales</p>
+        <nav class="header-nav">
+            <ul class="nav-list">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#catalogo">Catálogo</a></li>
+                <li><a href="index.html#colecciones">Colecciones</a></li>
+                <li><a href="index.html#ofertas">Ofertas</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+            <ul class="nav-list nav-actions-list">
+                <li><a href="login.html" class="btn-nav-login">Iniciar Sesión</a></li>
+                <li><a href="registro.html" class="btn-nav-register">Registrarse</a></li>
+                <li><a href="cart.html" title="Ver carrito de compras"><img class="pokeball-icon" src="https://upload.wikimedia.org/wikipedia/commons/5/51/Pokebola-pokeball-png-0.png" alt=""> Carrito</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="page-main">
+        <div class="contact-container">
+            
+            <div class="contact-header">
+                <h1>Contactanos</h1>
+                <p>¿Tenés alguna duda o sugerencia? Escribinos y te responderemos a la brevedad.</p>
+            </div>
+
+            <div class="contact-grid">
+                
+                <!-- Formulario de Contacto -->
+                <div class="contact-box">
+                    <h2>Envianos un Mensaje</h2>
+                    <form action="#" method="POST" class="auth-form">
+                        
+                        <div class="form-group">
+                            <label for="nombre">Nombre Completo</label>
+                            <input type="text" id="nombre" name="nombre" required placeholder="Tu nombre">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">Correo Electrónico</label>
+                                <input type="email" id="email" name="email" required placeholder="tu@email.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="telefono">Teléfono (Opcional)</label>
+                                <input type="tel" id="telefono" name="telefono" placeholder="Ej: 1123456789">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="motivo">Motivo de la consulta</label>
+                            <select id="motivo" name="motivo" required>
+                                <option value="" disabled selected>Seleccioná un motivo...</option>
+                                <option value="general">Consulta general</option>
+                                <option value="pedido">Problema con pedido</option>
+                                <option value="devolucion">Devoluciones</option>
+                                <option value="disponibilidad">Disponibilidad</option>
+                                <option value="sugerencia">Sugerencias</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mensaje">Mensaje</label>
+                            <textarea id="mensaje" name="mensaje" rows="6" required placeholder="Escribí tu mensaje acá..."></textarea>
+                        </div>
+
+                        <div class="form-options check-options">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="privacidad" required> Acepto la política de privacidad y tratamiento de datos.
+                            </label>
+                        </div>
+
+                        <button type="submit" class="auth-submit-btn">Enviar Mensaje</button>
+                    </form>
+                </div>
+
+                <!-- Info de Contacto -->
+                <div class="contact-box">
+                    <h2>Información de Contacto</h2>
+                    <ul class="contact-info-list">
+                        <li><strong>📧 Email:</strong> contacto@elcentropokecard.com.ar</li>
+                        <li><strong>📞 Teléfono:</strong> +54 11 1234-5678</li>
+                        <li><strong>🕒 Horarios:</strong> Lun a Vie - 10:00 a 19:00 hs</li>
+                        <li><strong>📍 Ubicación:</strong> Buenos Aires, Argentina</li>
+                    </ul>
+                    
+                    <div class="contact-map">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d105073.44367098416!2d-58.50333857508736!3d-34.61566245778848!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bcca3b4ef90cbd%3A0xa0b3812e88e88e87!2sBuenos%20Aires%2C%20CABA!5e0!3m2!1ses-419!2sar!4v1700000000000!5m2!1ses-419!2sar" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Preguntas Frecuentes (FAQ) -->
+            <section class="faq-section">
+                <h2>Preguntas Frecuentes</h2>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">¿Hacen envíos a todo el país?</summary>
+                    <div class="faq-content">
+                        Sí, realizamos envíos a toda la Argentina a través de Correo Argentino y Andreani. Los costos se calculan al momento de pagar según tu código postal.
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">¿Las cartas son 100% originales?</summary>
+                    <div class="faq-content">
+                        Totalmente. Todos nuestros productos, desde los booster packs hasta las colecciones ETB, son oficiales de The Pokémon Company importados de forma legal.
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">¿Cuál es el tiempo de entrega?</summary>
+                    <div class="faq-content">
+                        En CABA y GBA entregamos en 24/48 hs hábiles. Para el resto del país, la demora estándar es de 3 a 7 días hábiles dependiendo del transporte.
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">¿Aceptan devoluciones?</summary>
+                    <div class="faq-content">
+                        Sí, aceptamos devoluciones dentro de los 10 días de recibido el producto siempre y cuando esté sellado de fábrica en sus condiciones originales.
+                    </div>
+                </details>
+
+                <details class="faq-item">
+                    <summary class="faq-summary">¿Tienen local físico?</summary>
+                    <div class="faq-content">
+                        Por el momento somos una tienda 100% online, lo que nos permite mantener mejores precios y ofertas, pero realizamos puntos de entrega por la zona de Microcentro.
+                    </div>
+                </details>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="page-footer">
+        <p class="footer-copy">&copy; 2024 El Centro Pokécard - Tienda Oficial de Cartas Pokémon</p>
+        <nav class="footer-social">
+            <h2>Síguenos en Redes Sociales</h2>
+            <ul class="social-list">
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Twitter / X</a></li>
+                <li><a href="#">Instagram</a></li>
+                <li><a href="#">YouTube</a></li>
+                <li><a href="#">TikTok</a></li>
+            </ul>
+        </nav>
+    </footer>
+
+</body>
+</html>
