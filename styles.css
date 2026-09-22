@@ -319,8 +319,8 @@ a:hover {
 
 /* ========== NAV DROPDOWN FILTERS & SEARCH ========== */
 .nav-filter-dropdown {
-    position: absolute;
-    left: 20px;
+    position: relative;
+    margin-right: 15px; /* Separación con los links principales */
 }
 
 .nav-filter-btn {
@@ -460,7 +460,6 @@ a:hover {
     }
     .nav-filter-dropdown {
         width: 100%;
-        position: static; /* Quita el absoluto en celular para que no se pise */
     }
     .nav-filter-btn {
         justify-content: center;
