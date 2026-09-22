@@ -958,6 +958,196 @@ a:hover {
     margin-top: 4px;
 }
 
+/* ========== AUTHENTICATION PAGES (LOGIN/REGISTER) ========== */
+.auth-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh; /* Se asegura de que haya espacio suficiente y quede centrado verticalmente */
+}
+
+/* Tarjeta del formulario */
+.auth-card {
+    background-color: #16213e; /* Fondo oscuro acorde al diseño global */
+    border: 1px solid #0f3460; /* Borde sutil */
+    border-radius: 12px; /* Bordes redondeados de la tarjeta */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* Sombra difuminada para despegarla del fondo */
+    padding: 40px;
+    width: 100%;
+    max-width: 450px; /* Límite de ancho para que no se estire de más en monitores grandes */
+    animation: fadeInUp 0.8s ease-out forwards; /* Animación de entrada suave reutilizada de la home */
+}
+
+.auth-card h2 {
+    color: #e94560; /* Título rojo característico */
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Agrupación de cada input y su respectivo label */
+.auth-form .form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Separación pequeña entre la etiqueta y la caja de texto */
+}
+
+.auth-form .form-group label {
+    color: #a0a0b0; /* Gris clarito para legibilidad */
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* Cajas de texto (inputs) */
+.auth-form .form-group input {
+    width: 100%; /* Asegura que el input ocupe todo el ancho disponible */
+    background-color: #1a1a2e; /* Fondo negro-azulado (dark theme) */
+    border: 1px solid #0f3460;
+    color: #ffffff; /* Letras que el usuario escriba en color blanco */
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    outline: none; /* Quitamos el reborde azul automático de Chrome/Edge */
+}
+
+/* Estado Focus (cuando el usuario hace click en el input para escribir) */
+.auth-form .form-group input:focus {
+    border-color: #e94560; /* El borde pasa a rojo intenso */
+    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2); /* Añade un sutil resplandor rojo por fuera */
+}
+
+/* Checkbox Recordarme y enlace de contraseña olvidada */
+.auth-form .form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    font-size: 0.9rem;
+}
+
+.auth-form .form-options .remember-me {
+    color: #b0b0c0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.auth-form .form-options .remember-me input {
+    accent-color: #e94560; /* Tilda el cuadradito de rojo en vez de azul default */
+}
+
+.auth-form .form-options .forgot-link {
+    color: #c0c0d0;
+    transition: color 0.3s;
+}
+
+.auth-form .form-options .forgot-link:hover {
+    color: #ffffff;
+}
+
+/* Botón principal de enviar (Submit) */
+.auth-submit-btn {
+    width: 100%;
+    background-color: #e94560; /* Rojo puro */
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.auth-submit-btn:hover {
+    background-color: #c73650; /* Rojo más oscuro al posar el mouse */
+    transform: translateY(-2px); /* Se levanta apenas para interactividad */
+}
+
+/* Pie de la tarjeta (Redirección a registro) */
+.auth-footer {
+    margin-top: 25px;
+    text-align: center;
+    color: #a0a0b0;
+    font-size: 0.95rem;
+    border-top: 1px solid #0f3460;
+    padding-top: 20px; /* Separación con la línea sutil */
+}
+
+.auth-footer a {
+    color: #e94560;
+    font-weight: 600;
+}
+
+.auth-footer a:hover {
+    color: #c73650;
+    text-decoration: underline;
+}
+
+/* ========== EXTRAS PARA EL REGISTRO ========== */
+
+/* Grid de dos columnas para agrupar campos (ej: Nombre y Apellido) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px; /* Separación entre columnas */
+}
+
+/* Forzar que el calendario nativo del navegador sea oscuro */
+.auth-form .form-group input[type="date"] {
+    color-scheme: dark;
+}
+
+/* Texto de ayuda debajo de los inputs (ej: Mínimo 8 caracteres) */
+.auth-form .form-group .help-text {
+    font-size: 0.8rem;
+    color: #6a6a8a; /* Color tenue para no distraer mucho */
+    margin-top: -2px;
+}
+
+/* Contenedor apilado para los checkboxes del final */
+.auth-form .check-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 25px;
+    margin-top: 10px;
+}
+
+.auth-form .check-options .checkbox-label {
+    color: #b0b0c0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.auth-form .check-options .checkbox-label input[type="checkbox"] {
+    accent-color: #e94560;
+}
+
+.auth-form .check-options .terms-link {
+    color: #c0c0d0;
+    text-decoration: underline;
+}
+
+.auth-form .check-options .terms-link:hover {
+    color: #ffffff;
+}
+
+/* En celulares, convertir el grid de dos columnas a una sola */
+@media (max-width: 500px) {
+    .form-row {
+        grid-template-columns: 1fr; /* Una sola columna que ocupa el 100% */
+        gap: 0; /* Quitamos el gap horizontal porque ahora es vertical y los márgenes de form-group ya actúan */
+    }
+}
+
 /* ========== NAV CART ========== */
 
 .page-header nav .nav-list:last-child li a {
