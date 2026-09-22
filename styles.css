@@ -1,35 +1,69 @@
+/* ================================================================
+   STYLES.CSS — El Centro Pokécard
+   
+   ÍNDICE DE SECCIONES:
+   1.  Variables / Color Palette
+   2.  Reset & Base
+   3.  Background (Patrón animado + Foco de luz)
+   4.  Links Globales
+   5.  Header (Título, Subtítulo, Nav)
+   6.  Nav — Botones Login/Register
+   7.  Nav — Dropdown Filtros
+   8.  Nav — Barra de Búsqueda
+   9.  Nav — Carrito (Pokeball Icon)
+   10. Hero Banner
+   11. Trust Bar (Beneficios)
+   12. Main Layout
+   13. Catálogo (Título + Grid)
+   14. Product Card
+   15. Product Detail Page
+   16. Search Bar (antigua, en catálogo)
+   17. Price Range Sliders
+   18. Authentication Pages (Login/Registro)
+   19. Cart Page
+   20. Cart Summary
+   21. Contact Page
+   22. FAQ Section
+   23. Footer
+   24. Accessibility
+   25. Responsive (TODOS los media queries unificados)
+   ================================================================ */
+
+
+/* ==========================================================
+   1. VARIABLES / COLOR PALETTE
+   ========================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
-/* ========== COLOR PALETTE ========== */
 :root {
-    /* Backgrounds */
+    /* Fondos */
     --color-bg-primary: #1a1a2e;
     --color-bg-secondary: #16213e;
     --color-bg-tertiary: #0f3460;
-    --color-bg-input: #0f3460;
-    --color-bg-select: #0f3460;
 
-    /* Text */
+    /* Textos */
     --color-text-primary: #e0e0e0;
     --color-text-secondary: #a0a0b0;
     --color-text-tertiary: #b0b0c0;
-    --color-text-link: #c0c0c0;
     --color-text-heading: #ffffff;
     --color-text-nav: #c0c0d0;
 
-    /* Accent / Brand */
+    /* Acento / Marca */
     --color-accent: #e94560;
     --color-accent-hover: #c73650;
     --color-accent-active: #a02a40;
 
-    /* Borders */
+    /* Bordes */
     --color-border: #0f3460;
     --color-border-light: #1a3a6e;
-    --color-border-select: #1a1a3e;
 }
 
+
+/* ==========================================================
+   2. RESET & BASE
+   ========================================================== */
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: smooth; /* Scroll suave al clickear anclas (#catalogo, etc.) */
 }
 
 * {
@@ -47,6 +81,11 @@ body {
     min-height: 100vh;
 }
 
+
+/* ==========================================================
+   3. BACKGROUND (Patrón animado + Foco de luz)
+   ========================================================== */
+
 /* Animación para que gire el fondo */
 @keyframes spinBackground {
     from { transform: rotate(0deg); }
@@ -57,15 +96,13 @@ body {
 body::before {
     content: "";
     position: fixed;
-    /* Hacemos la capa el doble de grande para que al girar no queden huecos en las esquinas */
-    top: -50vh; left: -50vw; 
+    top: -50vh; left: -50vw;
     width: 200vw; height: 200vh;
     background-image: url('https://cdn.pixabay.com/photo/2016/07/23/13/18/pokemon-1536847_640.png');
     background-size: 150px 150px;
     background-repeat: repeat;
     opacity: 0.04; /* Muy transparente para no molestar */
     z-index: -2;
-    /* Aplicamos la animación: 120 segundos, continuo e infinito */
     animation: spinBackground 120s linear infinite;
 }
 
@@ -73,13 +110,29 @@ body::before {
 body::after {
     content: "";
     position: fixed;
-    top: 0; left: 0; 
+    top: 0; left: 0;
     width: 100%; height: 100%;
     background-image: radial-gradient(circle at top center, rgba(22, 33, 62, 0) 0%, #1a1a2e 85%);
     pointer-events: none; /* Importante para poder clickear los elementos debajo */
     z-index: -1;
 }
 
+/* Animación de entrada reutilizada por Hero Banner, Auth Cards, etc. */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ==========================================================
+   4. LINKS GLOBALES
+   ========================================================== */
 a {
     text-decoration: none;
     color: #c0c0c0;
@@ -89,16 +142,19 @@ a:hover {
     color: #ffffff;
 }
 
-/* ========== HEADER ========== */
+
+/* ==========================================================
+   5. HEADER (Título, Subtítulo, Nav)
+   ========================================================== */
 .page-header {
     background-color: #16213e; /* Fondo sólido para que no se vea transparente al scrollear */
     border-bottom: 2px solid #0f3460;
     padding: 20px 30px;
     text-align: center;
-    position: sticky; /* Hace que el header se quede pegado al scrollear */
-    top: 0; /* Define que se pegue en la parte superior (0px de distancia del top) */
-    z-index: 1000; /* Lo mantiene por encima del resto del contenido */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Agrega sombra para separarlo visualmente del contenido inferior */
+    position: sticky; /* Se queda pegado al scrollear */
+    top: 0;
+    z-index: 1000; /* Por encima del resto del contenido */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .page-header .header-title {
@@ -113,10 +169,15 @@ a:hover {
     margin-bottom: 15px;
 }
 
+/* Barra de navegación principal */
 .page-header nav {
     background-color: #1a1a2e;
     padding: 10px 0;
     border-top: 1px solid #0f3460;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Para que los hijos con position:absolute se posicionen acá */
 }
 
 .page-header nav ul {
@@ -127,66 +188,7 @@ a:hover {
     flex-wrap: wrap;
 }
 
-.page-header nav {
-    background-color: #1a1a2e;
-    padding: 10px 0;
-    border-top: 1px solid #0f3460;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-.page-header nav .nav-list:last-child {
-    position: absolute;
-    right: 20px;
-    margin-left: 0;
-}
-
-/* Estilo para el botón de Iniciar Sesión */
-.btn-nav-login {
-    border: 2px solid #e94560;
-    color: #e94560 !important; /* Importante para sobreescribir el color gris por defecto de los links */
-    background-color: transparent;
-    padding: 6px 14px;
-}
-
-.btn-nav-login:hover {
-    background-color: #e94560 !important;
-    color: #ffffff !important;
-}
-
-/* Estilo para el botón de Registrarse */
-.btn-nav-register {
-    background-color: #e94560;
-    color: #ffffff !important;
-    padding: 8px 16px; /* Ligeramente más padding porque no tiene borde visible */
-}
-
-.btn-nav-register:hover {
-    background-color: #c73650 !important;
-}
-
-/* Media query para móviles: apila el menú verticalmente */
-@media (max-width: 850px) {
-    .page-header nav {
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px 0;
-    }
-    
-    .page-header nav ul {
-        gap: 10px;
-        flex-direction: column; /* Apila los links verticalmente */
-        align-items: center;
-    }
-    
-    .page-header nav .nav-list:last-child {
-        position: static; /* Quita el absolute para que se apile con el resto */
-        margin-top: 10px;
-    }
-}
-
+/* Estilos de los links del menú */
 .page-header nav ul li a {
     color: #c0c0d0;
     font-weight: 600;
@@ -201,131 +203,57 @@ a:hover {
     color: #ffffff;
 }
 
-/* ========== HERO BANNER ========== */
-.hero-banner {
-    min-height: 60vh; /* Ocupa al menos el 60% del alto de la pantalla */
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%); /* Fondo con gradiente oscuro diagonal */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 0 20px;
-    animation: fadeInUp 1s ease-out forwards; /* Animación de entrada al cargar */
+
+/* ==========================================================
+   6. NAV — BOTONES LOGIN / REGISTER
+   ========================================================== */
+
+/* Lista de acciones (Login, Register, Carrito) posicionada a la derecha */
+.page-header nav .nav-list:last-child {
+    position: absolute;
+    right: 20px;
+    margin-left: 0;
 }
 
-.hero-banner .hero-title {
-    font-size: 3.5rem; /* Título grande */
-    color: #ffffff; /* Título en blanco */
-    margin-bottom: 20px;
+/* Botón "Iniciar Sesión" — solo borde */
+.btn-nav-login {
+    border: 2px solid #e94560;
+    color: #e94560 !important;
+    background-color: transparent;
+    padding: 6px 14px;
 }
 
-.hero-banner .hero-subtitle {
-    font-size: 1.2rem;
-    color: #a0a0b0;
-    margin-bottom: 30px;
-    max-width: 600px;
+.btn-nav-login:hover {
+    background-color: #e94560 !important;
+    color: #ffffff !important;
 }
 
-.hero-banner .hero-btn {
-    display: inline-block;
-    background-color: #e94560; /* Botón color rojo */
-    color: #ffffff;
-    padding: 15px 30px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    transition: background-color 0.3s, transform 0.3s; /* Transición suave para el hover */
+/* Botón "Registrarse" — relleno sólido */
+.btn-nav-register {
+    background-color: #e94560;
+    color: #ffffff !important;
+    padding: 8px 16px;
 }
 
-.hero-banner .hero-btn:hover {
-    background-color: #c73650; /* Oscurece un poco el botón */
-    transform: translateY(-5px); /* Levanta el botón al hacer hover */
+.btn-nav-register:hover {
+    background-color: #c73650 !important;
 }
 
-/* Animación de entrada sin JavaScript */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 
-/* ========== TRUST BAR ========== */
-.trust-bar {
-    background-color: #0f3460; /* Fondo un poco más oscuro que el body */
-    border-top: 1px solid #1a3a6e; /* Borde superior para separar */
-    border-bottom: 1px solid #1a3a6e; /* Borde inferior para separar */
-    padding: 25px 0;
-}
+/* ==========================================================
+   7. NAV — DROPDOWN FILTROS (solo en index.html)
+   ========================================================== */
 
-.trust-bar .trust-items {
-    display: flex; /* Usa flexbox para acomodar los 4 ítems en fila */
-    justify-content: space-around; /* Reparte el espacio equitativamente */
-    align-items: center;
-    max-width: 1300px;
-    margin: 0 auto;
-    padding: 0 20px;
-    gap: 20px;
-}
-
-.trust-bar .trust-item {
-    display: flex;
-    align-items: center;
-    gap: 12px; /* Espacio entre el icono y el texto */
-    transition: transform 0.3s; /* Efecto suave para el hover */
-}
-
-.trust-bar .trust-item:hover {
-    transform: translateY(-5px); /* Levanta el ítem hacia arriba al pasar el mouse */
-}
-
-.trust-bar .trust-icon {
-    font-size: 1.5rem; /* Hace que los iconos sean un poco grandes */
-}
-
-.trust-bar .trust-text {
-    color: #c0c0d0; /* Color gris claro para el texto */
-    font-weight: 600;
-    font-size: 0.95rem;
-}
-
-/* Media query para móviles: apila los beneficios en una columna */
-@media (max-width: 768px) {
-    .trust-bar .trust-items {
-        flex-direction: column; /* Los ubica uno abajo del otro */
-        align-items: center;
-        gap: 25px;
-    }
-    
-    .trust-bar .trust-item {
-        width: 100%;
-        justify-content: center; /* Centra el contenido de cada ítem en mobile */
-    }
-}
-
-/* ========== MAIN LAYOUT ========== */
-.page-main {
-    display: flex;
-    max-width: 1300px;
-    margin: 30px auto;
-    gap: 30px;
-    padding: 0 20px;
-}
-
-/* ========== NAV DROPDOWN FILTERS & SEARCH ========== */
+/* Contenedor del desplegable, anclado al tope izquierdo del nav */
 .nav-filter-dropdown {
-    position: relative;
-    margin-right: 15px; /* Separación con los links principales */
+    position: absolute;
+    left: 20px;
 }
 
+/* Botón "⚙️ Filtros" */
 .nav-filter-btn {
     cursor: pointer;
-    list-style: none; /* Oculta la flecha por defecto */
+    list-style: none; /* Oculta la flecha por defecto de <details> */
     background-color: #0f3460;
     color: #ffffff;
     border: 1px solid #1a3a6e;
@@ -340,14 +268,14 @@ a:hover {
 }
 
 .nav-filter-btn::-webkit-details-marker {
-    display: none;
+    display: none; /* Oculta flecha en Safari/Chrome */
 }
 
 .nav-filter-btn:hover {
     background-color: #1a3a6e;
 }
 
-/* El menú que cuelga */
+/* Panel desplegable que cuelga del botón */
 .nav-filter-menu {
     position: absolute;
     top: 120%;
@@ -361,6 +289,7 @@ a:hover {
     z-index: 2000;
 }
 
+/* Fieldsets dentro del menú de filtros */
 .nav-filter-menu .filter-fieldset {
     border: 1px solid #0f3460;
     border-radius: 6px;
@@ -401,6 +330,7 @@ a:hover {
     border-radius: 4px;
 }
 
+/* Botón "Aplicar Filtros" */
 .btn-apply {
     width: 100%;
     background-color: #e94560;
@@ -417,11 +347,14 @@ a:hover {
     background-color: #c73650;
 }
 
-/* Nav Search Bar */
+
+/* ==========================================================
+   8. NAV — BARRA DE BÚSQUEDA
+   ========================================================== */
 .nav-search-bar {
     display: flex;
     align-items: center;
-    margin-left: 20px; /* Separación de los links */
+    margin-left: 20px;
 }
 
 .nav-search-input {
@@ -450,28 +383,137 @@ a:hover {
     background-color: #c73650;
 }
 
-@media (max-width: 850px) {
-    .nav-search-bar {
-        margin: 10px 0;
-        width: 100%;
-    }
-    .nav-search-input {
-        width: 100%;
-    }
-    .nav-filter-dropdown {
-        width: 100%;
-    }
-    .nav-filter-btn {
-        justify-content: center;
-    }
-    .nav-filter-menu {
-        width: 100%;
-        position: static;
-        margin-top: 10px;
-    }
+
+/* ==========================================================
+   9. NAV — CARRITO (Pokeball Icon)
+   ========================================================== */
+.page-header nav .nav-list:last-child li a {
+    color: #e94560;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s;
 }
 
-/* ========== CATALOG / OPTIONS ========== */
+.page-header nav .nav-list:last-child li a:hover {
+    background-color: #0f3460;
+    color: #e94560;
+}
+
+.pokeball-icon {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+
+/* ==========================================================
+   10. HERO BANNER
+   ========================================================== */
+.hero-banner {
+    min-height: 60vh; /* Ocupa al menos el 60% del alto de la pantalla */
+    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 20px;
+    animation: fadeInUp 1s ease-out forwards;
+}
+
+.hero-banner .hero-title {
+    font-size: 3.5rem;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.hero-banner .hero-subtitle {
+    font-size: 1.2rem;
+    color: #a0a0b0;
+    margin-bottom: 30px;
+    max-width: 600px;
+}
+
+.hero-banner .hero-btn {
+    display: inline-block;
+    background-color: #e94560;
+    color: #ffffff;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.hero-banner .hero-btn:hover {
+    background-color: #c73650;
+    transform: translateY(-5px);
+}
+
+
+/* ==========================================================
+   11. TRUST BAR (Beneficios)
+   ========================================================== */
+.trust-bar {
+    background-color: #0f3460;
+    border-top: 1px solid #1a3a6e;
+    border-bottom: 1px solid #1a3a6e;
+    padding: 25px 0;
+}
+
+.trust-bar .trust-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 20px;
+    gap: 20px;
+}
+
+.trust-bar .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s;
+}
+
+.trust-bar .trust-item:hover {
+    transform: translateY(-5px);
+}
+
+.trust-bar .trust-icon {
+    font-size: 1.5rem;
+}
+
+.trust-bar .trust-text {
+    color: #c0c0d0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+
+/* ==========================================================
+   12. MAIN LAYOUT
+   ========================================================== */
+.page-main {
+    display: flex;
+    max-width: 1300px;
+    margin: 30px auto;
+    gap: 30px;
+    padding: 0 20px;
+}
+
+
+/* ==========================================================
+   13. CATÁLOGO (Título + Grid)
+   ========================================================== */
 .catalog {
     flex: 1;
 }
@@ -484,14 +526,16 @@ a:hover {
     padding-bottom: 10px;
 }
 
-/* ========== PRODUCT GRID ========== */
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 25px;
 }
 
-/* ========== PRODUCT CARD ========== */
+
+/* ==========================================================
+   14. PRODUCT CARD
+   ========================================================== */
 .product-card {
     background-color: #16213e;
     border: 1px solid #0f3460;
@@ -574,51 +618,10 @@ a:hover {
     color: #ffffff;
 }
 
-/* ========== FOOTER ========== */
-.page-footer {
-    background-color: #16213e;
-    border-top: 2px solid #0f3460;
-    padding: 30px;
-    text-align: center;
-    margin-top: 50px;
-}
 
-.page-footer .footer-copy {
-    color: #a0a0b0;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-}
-
-.page-footer .footer-social h2 {
-    color: #e94560;
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-}
-
-.page-footer .footer-social ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-
-.page-footer .footer-social ul li a {
-    color: #b0b0c0;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: 1px solid #0f3460;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.page-footer .footer-social ul li a:hover {
-    background-color: #0f3460;
-    color: #ffffff;
-}
-
-/* ========== PRODUCT DETAIL PAGE ========== */
+/* ==========================================================
+   15. PRODUCT DETAIL PAGE
+   ========================================================== */
 .detail-container {
     max-width: 900px;
     margin: 40px auto;
@@ -645,6 +648,7 @@ a:hover {
     color: #e94560;
 }
 
+/* Card de detalle */
 .detail-card {
     background-color: #16213e;
     border: 1px solid #0f3460;
@@ -654,27 +658,12 @@ a:hover {
     flex-direction: column;
 }
 
-@media (min-width: 768px) {
-    .detail-card {
-        flex-direction: row;
-    }
-    .detail-card .detail-image {
-        width: 50%;
-        height: auto;
-        min-height: 400px;
-    }
-    .detail-card .detail-body {
-        width: 50%;
-        border-left: 1px solid #0f3460;
-    }
-}
-
 .detail-card .detail-image {
     width: 100%;
     height: 350px;
-    background-color: transparent; /* Fondo transparente para lucir más limpio */
+    background-color: transparent;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     overflow: hidden;
     padding: 20px;
@@ -682,9 +671,10 @@ a:hover {
 
 .detail-card .detail-image img {
     width: 100%;
-    height: 100%;
-    object-fit: contain; /* Para que la caja no se recorte */
-    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4)); /* Sombra bonita para la caja */
+    height: auto;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
 }
 
 .detail-card .detail-image .image-placeholder {
@@ -729,6 +719,7 @@ a:hover {
     font-weight: 700;
 }
 
+/* Acordeón de descripción dentro de producto */
 .product-accordion {
     margin-top: 20px;
     border-bottom: 1px solid #0f3460;
@@ -771,29 +762,7 @@ a:hover {
     margin-top: 10px;
 }
 
-.detail-card .add-to-cart-btn {
-    display: inline-block;
-    background-color: #e94560;
-    color: #ffffff;
-    border: none;
-    padding: 15px 40px;
-    border-radius: 8px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    cursor: pointer;
-    margin-top: 25px;
-    transition: background-color 0.3s;
-}
-
-.detail-card .add-to-cart-btn:hover {
-    background-color: #c73650;
-}
-
-.detail-card .add-to-cart-btn:active {
-    background-color: #a02a40;
-}
-
-/* Nuevos Estilos para Ficha de Producto */
+/* Badges de producto */
 .product-badges {
     display: flex;
     flex-wrap: wrap;
@@ -812,6 +781,7 @@ a:hover {
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
+/* Formulario de agregar al carrito */
 .add-to-cart-form {
     display: flex;
     flex-wrap: wrap;
@@ -851,26 +821,39 @@ a:hover {
     border-color: #e94560;
 }
 
+/* Botón "Agregar al carrito" */
+.detail-card .add-to-cart-btn {
+    display: inline-block;
+    background-color: #e94560;
+    color: #ffffff;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 25px;
+    transition: background-color 0.3s;
+}
+
+.detail-card .add-to-cart-btn:hover {
+    background-color: #c73650;
+}
+
+.detail-card .add-to-cart-btn:active {
+    background-color: #a02a40;
+}
+
 .detail-card .add-to-cart-form .add-to-cart-btn {
-    margin-top: 0; /* Override previous margin */
-    flex: 1; /* Para que ocupe el resto del espacio */
+    margin-top: 0;
+    flex: 1;
     min-width: 200px;
 }
 
-/* ========== ACCESSIBILITY ========== */
-.sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
-}
 
-/* ========== SEARCH BAR ========== */
+/* ==========================================================
+   16. SEARCH BAR (antigua, dentro del catálogo)
+   ========================================================== */
 .search-bar {
     display: flex;
     gap: 10px;
@@ -918,7 +901,10 @@ a:hover {
     background-color: #c73650;
 }
 
-/* ========== PRICE RANGE SLIDERS ========== */
+
+/* ==========================================================
+   17. PRICE RANGE SLIDERS
+   ========================================================== */
 .range-group {
     margin-bottom: 18px;
 }
@@ -943,6 +929,7 @@ a:hover {
     accent-color: #e94560;
 }
 
+/* Thumb — Chrome/Safari */
 .range-group input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -959,6 +946,7 @@ a:hover {
     background: #c73650;
 }
 
+/* Thumb — Firefox */
 .range-group input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
@@ -988,68 +976,102 @@ a:hover {
     margin-top: 4px;
 }
 
-/* ========== AUTHENTICATION PAGES (LOGIN/REGISTER) ========== */
+
+/* ==========================================================
+   18. AUTHENTICATION PAGES (Login / Registro)
+   ========================================================== */
+
+/* Centra la tarjeta verticalmente */
 .auth-main {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 70vh; /* Se asegura de que haya espacio suficiente y quede centrado verticalmente */
+    min-height: 70vh;
 }
 
 /* Tarjeta del formulario */
 .auth-card {
-    background-color: #16213e; /* Fondo oscuro acorde al diseño global */
-    border: 1px solid #0f3460; /* Borde sutil */
-    border-radius: 12px; /* Bordes redondeados de la tarjeta */
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); /* Sombra difuminada para despegarla del fondo */
+    background-color: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     padding: 40px;
     width: 100%;
-    max-width: 450px; /* Límite de ancho para que no se estire de más en monitores grandes */
-    animation: fadeInUp 0.8s ease-out forwards; /* Animación de entrada suave reutilizada de la home */
+    max-width: 450px;
+    animation: fadeInUp 0.8s ease-out forwards;
 }
 
 .auth-card h2 {
-    color: #e94560; /* Título rojo característico */
+    color: #e94560;
     font-size: 2rem;
     text-align: center;
     margin-bottom: 30px;
 }
 
-/* Agrupación de cada input y su respectivo label */
+/* Cada campo del formulario */
 .auth-form .form-group {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Separación pequeña entre la etiqueta y la caja de texto */
+    gap: 8px;
 }
 
 .auth-form .form-group label {
-    color: #a0a0b0; /* Gris clarito para legibilidad */
+    color: #a0a0b0;
     font-size: 0.95rem;
     font-weight: 600;
 }
 
-/* Cajas de texto (inputs) */
+/* Inputs */
 .auth-form .form-group input {
-    width: 100%; /* Asegura que el input ocupe todo el ancho disponible */
-    background-color: #1a1a2e; /* Fondo negro-azulado (dark theme) */
+    width: 100%;
+    background-color: #1a1a2e;
     border: 1px solid #0f3460;
-    color: #ffffff; /* Letras que el usuario escriba en color blanco */
+    color: #ffffff;
     padding: 12px 15px;
     border-radius: 8px;
     font-family: 'Inter', sans-serif;
     font-size: 1rem;
     transition: border-color 0.3s, box-shadow 0.3s;
-    outline: none; /* Quitamos el reborde azul automático de Chrome/Edge */
+    outline: none;
 }
 
-/* Estado Focus (cuando el usuario hace click en el input para escribir) */
+/* Focus — borde rojo + resplandor */
 .auth-form .form-group input:focus {
-    border-color: #e94560; /* El borde pasa a rojo intenso */
-    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2); /* Añade un sutil resplandor rojo por fuera */
+    border-color: #e94560;
+    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2);
 }
 
-/* Checkbox Recordarme y enlace de contraseña olvidada */
+/* Textarea y Select (usados en contacto) */
+.auth-form .form-group textarea,
+.auth-form .form-group select {
+    width: 100%;
+    background-color: #1a1a2e;
+    border: 1px solid #0f3460;
+    color: #ffffff;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.auth-form .form-group textarea {
+    resize: vertical; /* Solo permite agrandar hacia abajo */
+}
+
+.auth-form .form-group select {
+    cursor: pointer;
+}
+
+.auth-form .form-group textarea:focus,
+.auth-form .form-group select:focus {
+    border-color: #e94560;
+    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2);
+}
+
+/* Checkbox "Recordarme" y enlace de contraseña */
 .auth-form .form-options {
     display: flex;
     justify-content: space-between;
@@ -1067,7 +1089,7 @@ a:hover {
 }
 
 .auth-form .form-options .remember-me input {
-    accent-color: #e94560; /* Tilda el cuadradito de rojo en vez de azul default */
+    accent-color: #e94560;
 }
 
 .auth-form .form-options .forgot-link {
@@ -1079,10 +1101,10 @@ a:hover {
     color: #ffffff;
 }
 
-/* Botón principal de enviar (Submit) */
+/* Botón Submit */
 .auth-submit-btn {
     width: 100%;
-    background-color: #e94560; /* Rojo puro */
+    background-color: #e94560;
     color: #ffffff;
     border: none;
     padding: 14px;
@@ -1094,18 +1116,18 @@ a:hover {
 }
 
 .auth-submit-btn:hover {
-    background-color: #c73650; /* Rojo más oscuro al posar el mouse */
-    transform: translateY(-2px); /* Se levanta apenas para interactividad */
+    background-color: #c73650;
+    transform: translateY(-2px);
 }
 
-/* Pie de la tarjeta (Redirección a registro) */
+/* Pie de la tarjeta (link a registro/login) */
 .auth-footer {
     margin-top: 25px;
     text-align: center;
     color: #a0a0b0;
     font-size: 0.95rem;
     border-top: 1px solid #0f3460;
-    padding-top: 20px; /* Separación con la línea sutil */
+    padding-top: 20px;
 }
 
 .auth-footer a {
@@ -1118,28 +1140,28 @@ a:hover {
     text-decoration: underline;
 }
 
-/* ========== EXTRAS PARA EL REGISTRO ========== */
+/* — Extras para Registro — */
 
-/* Grid de dos columnas para agrupar campos (ej: Nombre y Apellido) */
+/* Grid de dos columnas (Nombre y Apellido) */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px; /* Separación entre columnas */
+    gap: 15px;
 }
 
-/* Forzar que el calendario nativo del navegador sea oscuro */
+/* Calendario nativo oscuro */
 .auth-form .form-group input[type="date"] {
     color-scheme: dark;
 }
 
-/* Texto de ayuda debajo de los inputs (ej: Mínimo 8 caracteres) */
+/* Texto de ayuda debajo de inputs */
 .auth-form .form-group .help-text {
     font-size: 0.8rem;
-    color: #6a6a8a; /* Color tenue para no distraer mucho */
+    color: #6a6a8a;
     margin-top: -2px;
 }
 
-/* Contenedor apilado para los checkboxes del final */
+/* Checkboxes del final (newsletter, términos) */
 .auth-form .check-options {
     flex-direction: column;
     align-items: flex-start;
@@ -1170,41 +1192,10 @@ a:hover {
     color: #ffffff;
 }
 
-/* En celulares, convertir el grid de dos columnas a una sola */
-@media (max-width: 500px) {
-    .form-row {
-        grid-template-columns: 1fr; /* Una sola columna que ocupa el 100% */
-        gap: 0; /* Quitamos el gap horizontal porque ahora es vertical y los márgenes de form-group ya actúan */
-    }
-}
 
-/* ========== NAV CART ========== */
-
-.page-header nav .nav-list:last-child li a {
-    color: #e94560;
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: background-color 0.3s;
-}
-
-.page-header nav .nav-list:last-child li a:hover {
-    background-color: #0f3460;
-    color: #e94560;
-}
-
-.pokeball-icon {
-    width: 22px;
-    height: 22px;
-    flex-shrink: 0;
-    object-fit: contain;
-}
-
-/* ========== CART PAGE ========== */
+/* ==========================================================
+   19. CART PAGE
+   ========================================================== */
 .cart-container {
     flex: 1;
 }
@@ -1290,7 +1281,10 @@ a:hover {
     font-weight: 700;
 }
 
-/* ========== CART SUMMARY ========== */
+
+/* ==========================================================
+   20. CART SUMMARY
+   ========================================================== */
 .cart-summary {
     flex: 0 0 340px;
     background-color: #16213e;
@@ -1299,7 +1293,7 @@ a:hover {
     padding: 25px;
     height: fit-content;
     position: sticky;
-    top: 160px; /* Para que no se pise con el menú superior sticky */
+    top: 160px; /* Para que no se pise con el header sticky */
 }
 
 .summary-title {
@@ -1393,62 +1387,10 @@ a:hover {
     color: #ffffff;
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 768px) {
-    .page-header nav {
-        flex-direction: column;
-        gap: 10px;
-    }
 
-    .page-header nav .nav-list:last-child {
-        position: static;
-        margin-left: 0;
-    }
-
-    .page-main {
-        flex-direction: column;
-    }
-
-    .sidebar {
-        flex: none;
-        position: static;
-    }
-
-    .cart-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .cart-item-total {
-        align-self: flex-end;
-    }
-
-    .cart-summary {
-        flex: none;
-        position: static;
-        margin-top: 20px;
-    }
-
-    .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    }
-
-    .search-bar {
-        flex-direction: column;
-    }
-
-    .search-bar .search-input {
-        min-width: unset;
-        width: 100%;
-    }
-
-    .search-bar .search-btn {
-        width: 100%;
-    }
-}
-
-/* ========== CONTACT PAGE ========== */
+/* ==========================================================
+   21. CONTACT PAGE
+   ========================================================== */
 .contact-container {
     max-width: 1200px;
     margin: 20px auto;
@@ -1461,7 +1403,7 @@ a:hover {
 }
 
 .contact-header h1 {
-    color: #e94560; /* Título rojo característico */
+    color: #e94560;
     font-size: 2.5rem;
     margin-bottom: 10px;
 }
@@ -1471,17 +1413,17 @@ a:hover {
     font-size: 1.1rem;
 }
 
-/* Grid de dos columnas para formulario e info */
+/* Grid de dos columnas (formulario + info) */
 .contact-grid {
     display: grid;
-    grid-template-columns: 3fr 2fr; /* Formulario ocupa más espacio (60%) que la info (40%) */
+    grid-template-columns: 3fr 2fr;
     gap: 40px;
     margin-bottom: 60px;
 }
 
-/* Tarjeta base compartida para los dos lados */
+/* Tarjeta base para ambos lados */
 .contact-box {
-    background-color: #16213e; /* Estilo consistente con las cards del sitio */
+    background-color: #16213e;
     border: 1px solid #0f3460;
     border-radius: 12px;
     padding: 30px;
@@ -1496,36 +1438,7 @@ a:hover {
     padding-bottom: 10px;
 }
 
-/* Extensiones para el form (textarea y select) usando las clases de auth-form */
-.auth-form .form-group textarea,
-.auth-form .form-group select {
-    width: 100%;
-    background-color: #1a1a2e; /* Fondo oscuro */
-    border: 1px solid #0f3460;
-    color: #ffffff;
-    padding: 12px 15px;
-    border-radius: 8px;
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.auth-form .form-group textarea {
-    resize: vertical; /* Solo permite agrandar hacia abajo, no hacia los costados */
-}
-
-.auth-form .form-group select {
-    cursor: pointer;
-}
-
-.auth-form .form-group textarea:focus,
-.auth-form .form-group select:focus {
-    border-color: #e94560;
-    box-shadow: 0 0 0 2px rgba(233, 69, 96, 0.2);
-}
-
-/* Estilos de la info de contacto (columna derecha) */
+/* Info de contacto (columna derecha) */
 .contact-info-list {
     list-style: none;
     margin-bottom: 25px;
@@ -1538,19 +1451,22 @@ a:hover {
 }
 
 .contact-info-list li strong {
-    color: #ffffff; /* Negrita blanca para resaltar el tipo de dato */
+    color: #ffffff;
 }
 
-/* Estilo para que el mapa incrustado no quede 100% cuadrado */
+/* Mapa embebido con bordes redondeados */
 .contact-map iframe {
     width: 100%;
     height: 250px;
     border: none;
-    border-radius: 12px; /* Redondeo de las puntas */
+    border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
-/* ========== FAQ SECTION ========== */
+
+/* ==========================================================
+   22. FAQ SECTION
+   ========================================================== */
 .faq-section {
     background-color: #16213e;
     border: 1px solid #0f3460;
@@ -1570,10 +1486,10 @@ a:hover {
     border-bottom: 1px solid #0f3460;
 }
 
-/* Título de cada acordeón (Pregunta) */
+/* Pregunta (summary) */
 .faq-summary {
     cursor: pointer;
-    list-style: none; /* Quita el triangulito feo de details */
+    list-style: none;
     padding: 15px 0;
     font-weight: 600;
     font-size: 1.1rem;
@@ -1585,28 +1501,28 @@ a:hover {
 }
 
 .faq-summary::-webkit-details-marker {
-    display: none; /* Quita el triangulito feo en Safari */
+    display: none;
 }
 
-/* Simulador de ícono con ::after (+ y -) */
+/* Ícono + / - */
 .faq-summary::after {
     content: '+';
     color: #e94560;
     font-size: 1.5rem;
 }
 
-/* Cambios visuales cuando el acordeón está abierto */
+/* Cuando está abierto */
 .faq-item[open] .faq-summary::after {
     content: '-';
 }
 
 .faq-item[open] .faq-summary {
     color: #e94560;
-    border-bottom: 1px dashed #e94560; /* Borde rojo que pedía el usuario debajo de la pregunta */
+    border-bottom: 1px dashed #e94560;
     margin-bottom: 15px;
 }
 
-/* Respuesta desplegada */
+/* Respuesta */
 .faq-content {
     color: #a0a0b0;
     line-height: 1.6;
@@ -1614,10 +1530,216 @@ a:hover {
     font-size: 0.95rem;
 }
 
-/* Responsive para celular: pasa de 2 columnas a 1 */
+
+/* ==========================================================
+   23. FOOTER
+   ========================================================== */
+.page-footer {
+    background-color: #16213e;
+    border-top: 2px solid #0f3460;
+    padding: 30px;
+    text-align: center;
+    margin-top: 50px;
+}
+
+.page-footer .footer-copy {
+    color: #a0a0b0;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.page-footer .footer-social h2 {
+    color: #e94560;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+}
+
+.page-footer .footer-social ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.page-footer .footer-social ul li a {
+    color: #b0b0c0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid #0f3460;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.page-footer .footer-social ul li a:hover {
+    background-color: #0f3460;
+    color: #ffffff;
+}
+
+
+/* ==========================================================
+   24. ACCESSIBILITY
+   ========================================================== */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+
+/* ==========================================================
+   25. RESPONSIVE — TODOS LOS MEDIA QUERIES UNIFICADOS
+   ========================================================== */
+
+/* ---- Tablets y pantallas medianas (max 850px) ---- */
 @media (max-width: 850px) {
+
+    /* Nav: apila verticalmente */
+    .page-header nav {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 0;
+    }
+
+    .page-header nav ul {
+        gap: 10px;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* Botones Login/Register/Cart dejan de ser absolutos */
+    .page-header nav .nav-list:last-child {
+        position: static;
+        margin-top: 10px;
+    }
+
+    /* Filtros dejan de ser absolutos */
+    .nav-filter-dropdown {
+        width: 100%;
+        position: static;
+    }
+
+    .nav-filter-btn {
+        justify-content: center;
+    }
+
+    .nav-filter-menu {
+        width: 100%;
+        position: static;
+        margin-top: 10px;
+    }
+
+    /* Barra de búsqueda ocupa 100% */
+    .nav-search-bar {
+        margin: 10px 0;
+        width: 100%;
+    }
+
+    .nav-search-input {
+        width: 100%;
+    }
+
+    /* Contacto: 1 columna */
     .contact-grid {
-        grid-template-columns: 1fr; /* Todo el ancho para cada caja */
+        grid-template-columns: 1fr;
         gap: 30px;
+    }
+}
+
+/* ---- Móviles (max 768px) ---- */
+@media (max-width: 768px) {
+
+    /* Trust bar apilada */
+    .trust-bar .trust-items {
+        flex-direction: column;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .trust-bar .trust-item {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Layout principal en columna */
+    .page-main {
+        flex-direction: column;
+    }
+
+    /* Carrito: items apilados */
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .cart-item-total {
+        align-self: flex-end;
+    }
+
+    .cart-summary {
+        flex: none;
+        position: static;
+        margin-top: 20px;
+    }
+
+    /* Grilla de productos más chica */
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    /* Search bar en columna */
+    .search-bar {
+        flex-direction: column;
+    }
+
+    .search-bar .search-input {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .search-bar .search-btn {
+        width: 100%;
+    }
+
+    /* Detalle de producto en columna */
+    .detail-card {
+        flex-direction: column;
+    }
+}
+
+/* ---- Detalle de producto en escritorio (min 768px) ---- */
+@media (min-width: 768px) {
+    .detail-card {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+
+    .detail-card .detail-image {
+        width: 50%;
+        height: auto;
+        min-height: 400px;
+    }
+
+    .detail-card .detail-body {
+        width: 50%;
+        border-left: 1px solid #0f3460;
+    }
+}
+
+/* ---- Celulares muy chicos (max 500px) ---- */
+@media (max-width: 500px) {
+
+    /* Grid Nombre/Apellido pasa a 1 columna */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 }
