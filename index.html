@@ -12,6 +12,56 @@
         <h1 class="header-title">El Centro Pokécard</h1>
         <p class="header-subtitle">Tu tienda online de cartas Pokémon oficiales</p>
         <nav class="header-nav">
+            <!-- Menú Desplegable de Filtros a la Izquierda -->
+            <details class="nav-filter-dropdown">
+                <summary class="nav-filter-btn">
+                    <span class="filter-icon">⚙️</span> Filtros
+                </summary>
+                <div class="nav-filter-menu">
+                    <form class="filter-form" action="#" method="get">
+                        <fieldset class="filter-fieldset">
+                            <legend class="filter-legend">Tipo de Producto</legend>
+                            <div class="filter-option">
+                                <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
+                                <label for="cat-box">Booster Box</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
+                                <label for="cat-pack">Booster Pack</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="cat-base" name="categoria" value="base-set">
+                                <label for="cat-base">Base Set</label>
+                            </div>
+                            <div class="filter-option">
+                                <input type="checkbox" id="cat-etb" name="categoria" value="etb">
+                                <label for="cat-etb">Elite Trainer Box</label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="filter-fieldset">
+                            <legend class="filter-legend">Colección</legend>
+                            <select class="filter-select" name="coleccion">
+                                <option value="">Todas las colecciones</option>
+                                <option value="scarlet-violet">Scarlet & Violet</option>
+                                <option value="sword-shield">Sword & Shield</option>
+                                <option value="cosmic-eclipse">Cosmic Eclipse</option>
+                            </select>
+                        </fieldset>
+
+                        <fieldset class="filter-fieldset">
+                            <legend class="filter-legend">Precio</legend>
+                            <div class="range-group">
+                                <label>Precio máximo</label>
+                                <input type="range" name="precio_max" min="0" max="500" value="500" step="5">
+                            </div>
+                        </fieldset>
+
+                        <button type="submit" class="btn-apply">Aplicar Filtros</button>
+                    </form>
+                </div>
+            </details>
+
             <ul class="nav-list">
                 <li><a href="#inicio">Inicio</a></li>
                 <li><a href="#catalogo">Catálogo</a></li>
@@ -19,6 +69,12 @@
                 <li><a href="#ofertas">Ofertas</a></li>
                 <li><a href="contacto.html">Contacto</a></li>
             </ul>
+
+            <!-- Barra de Búsqueda Integrada -->
+            <form class="nav-search-bar" action="#" method="get" role="search">
+                <input type="search" name="buscar" class="nav-search-input" placeholder="Buscar..." required>
+                <button type="submit" class="nav-search-btn">🔍</button>
+            </form>
             <ul class="nav-list nav-actions-list">
                 <li><a href="login.html" class="btn-nav-login">Iniciar Sesión</a></li>
                 <li><a href="registro.html" class="btn-nav-register">Registrarse</a></li>
@@ -43,77 +99,8 @@
     </section>
 
     <main class="page-main">
-        <aside class="sidebar">
-            <details class="filter-details">
-                <summary class="filter-summary">
-                    <h2>Filtrar por Categoría</h2>
-                </summary>
-                <form class="filter-form" action="#" method="get">
-                    <fieldset class="filter-fieldset">
-                        <legend class="filter-legend">Tipo de Producto</legend>
-                        <div class="filter-option">
-                            <input type="checkbox" id="cat-box" name="categoria" value="booster-box">
-                            <label for="cat-box">Booster Box</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="cat-pack" name="categoria" value="booster-pack">
-                            <label for="cat-pack">Booster Pack</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="cat-base" name="categoria" value="base-set">
-                            <label for="cat-base">Base Set</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="cat-etb" name="categoria" value="etb">
-                            <label for="cat-etb">Elite Trainer Box (ETB)</label>
-                        </div>
-                        <div class="filter-option">
-                            <input type="checkbox" id="cat-sobre" name="categoria" value="sobre">
-                            <label for="cat-sobre">Sobre / Caja Individual</label>
-                        </div>
-                    </fieldset>
-
-                    <fieldset class="filter-fieldset">
-                        <legend class="filter-legend">Colección</legend>
-                        <select class="filter-select" name="coleccion" id="coleccion">
-                            <option value="">Todas las colecciones</option>
-                            <option value="scarlet-violet">Scarlet & Violet</option>
-                            <option value="sword-shield">Sword & Shield</option>
-                            <option value="cosmic-eclipse">Cosmic Eclipse</option>
-                            <option value="obsidian-flames">Obsidian Flames</option>
-                            <option value="evolving-skies">Evolving Skies</option>
-                            <option value="surging-sparks">Surging Sparks</option>
-                        </select>
-                    </fieldset>
-
-                    <fieldset class="filter-fieldset">
-                        <legend class="filter-legend">Precio</legend>
-                        <div class="range-group">
-                            <label for="precio-min">Precio mínimo</label>
-                            <input type="range" id="precio-min" name="precio_min" min="0" max="500" value="0" step="5">
-                            <span class="range-value" id="precio-min-val">$0</span>
-                        </div>
-                        <div class="range-group">
-                            <label for="precio-max">Precio máximo</label>
-                            <input type="range" id="precio-max" name="precio_max" min="0" max="500" value="500" step="5">
-                            <span class="range-value" id="precio-max-val">$500</span>
-                        </div>
-                    </fieldset>
-
-                    <button type="submit" class="btn-apply">Aplicar Filtros</button>
-                    <button type="reset" class="btn-reset">Limpiar Filtros</button>
-                </form>
-            </details>
-        </aside>
-
         <section class="catalog" id="catalogo">
             <h2>Catálogo de Productos</h2>
-
-            <form class="search-bar" action="#" method="get" role="search">
-                <label for="producto-search" class="sr-only">Buscar productos</label>
-                <input type="search" id="producto-search" name="buscar" class="search-input" placeholder="Buscar productos..." minlength="2" maxlength="100" autocomplete="off">
-                <button type="submit" class="search-btn">Buscar</button>
-            </form>
 
             <div class="product-grid">
 
