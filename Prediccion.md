@@ -31,3 +31,5 @@ cetral y footer, sobre una tienda de cartas.
 15.Quiero agregar el apartado de contacto
 
 16.Quiero hacer arreglos generales
+
+17.Quiero mejorar el responsive
