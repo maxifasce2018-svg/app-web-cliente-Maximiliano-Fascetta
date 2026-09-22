@@ -23,3 +23,5 @@ cetral y footer, sobre una tienda de cartas.
 11.quiero una seccion antes de todo para que venda mi paguina que se vea mas profecional
 
 12.Quiero agregar un inicio de secion y registro en el index
+
+13.Quiero mostrar las ventajas de la tienda de forma visual (envío, originalidad, etc.) como hacen las tiendas reales. Genera confianza y se ve muy profesional.
