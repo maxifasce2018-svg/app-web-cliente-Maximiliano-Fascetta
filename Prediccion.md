@@ -17,3 +17,5 @@ cetral y footer, sobre una tienda de cartas.
 8.Mejora del fondo para que no se vea plano ya que no me gusta la idea es mejorarlo y que se vea mas dinamico y fluido.
 
 9.Quiero mejorar un poco el apartado de productos y mejoras visuales de los productos y titulos.
+
+10.Quiero que el header quede fijo cuando bajo 

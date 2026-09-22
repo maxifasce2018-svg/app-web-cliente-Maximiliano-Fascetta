@@ -87,10 +87,14 @@ a:hover {
 
 /* ========== HEADER ========== */
 .page-header {
-    background-color: #16213e;
+    background-color: #16213e; /* Fondo sólido para que no se vea transparente al scrollear */
     border-bottom: 2px solid #0f3460;
     padding: 20px 30px;
     text-align: center;
+    position: sticky; /* Hace que el header se quede pegado al scrollear */
+    top: 0; /* Define que se pegue en la parte superior (0px de distancia del top) */
+    z-index: 1000; /* Lo mantiene por encima del resto del contenido */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Agrega sombra para separarlo visualmente del contenido inferior */
 }
 
 .page-header .header-title {
