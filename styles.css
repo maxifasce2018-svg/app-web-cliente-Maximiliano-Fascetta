@@ -143,6 +143,50 @@ a:hover {
     margin-left: 0;
 }
 
+/* Estilo para el botón de Iniciar Sesión */
+.btn-nav-login {
+    border: 2px solid #e94560;
+    color: #e94560 !important; /* Importante para sobreescribir el color gris por defecto de los links */
+    background-color: transparent;
+    padding: 6px 14px;
+}
+
+.btn-nav-login:hover {
+    background-color: #e94560 !important;
+    color: #ffffff !important;
+}
+
+/* Estilo para el botón de Registrarse */
+.btn-nav-register {
+    background-color: #e94560;
+    color: #ffffff !important;
+    padding: 8px 16px; /* Ligeramente más padding porque no tiene borde visible */
+}
+
+.btn-nav-register:hover {
+    background-color: #c73650 !important;
+}
+
+/* Media query para móviles: apila el menú verticalmente */
+@media (max-width: 850px) {
+    .page-header nav {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px 0;
+    }
+    
+    .page-header nav ul {
+        gap: 10px;
+        flex-direction: column; /* Apila los links verticalmente */
+        align-items: center;
+    }
+    
+    .page-header nav .nav-list:last-child {
+        position: static; /* Quita el absolute para que se apile con el resto */
+        margin-top: 10px;
+    }
+}
+
 .page-header nav ul li a {
     color: #c0c0d0;
     font-weight: 600;

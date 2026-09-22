@@ -21,3 +21,5 @@ cetral y footer, sobre una tienda de cartas.
 10.Quiero que el header quede fijo cuando bajo 
 
 11.quiero una seccion antes de todo para que venda mi paguina que se vea mas profecional
+
+12.Quiero agregar un inicio de secion y registro en el index
