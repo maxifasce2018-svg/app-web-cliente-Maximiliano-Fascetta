@@ -33,3 +33,6 @@ cetral y footer, sobre una tienda de cartas.
 16.Quiero hacer arreglos generales
 
 17.Quiero mejorar el responsive
+
+18.Quiero agregar meta tags de SEO (description, Open Graph, Twitter Cards) y un favicon en el <head> de todas las páginas HTML de mi proyecto, cada una con su propia description acorde a su contenido, sin tocar el body ni el CSS.
+
