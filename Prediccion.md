@@ -39,3 +39,5 @@ cetral y footer, sobre una tienda de cartas.
 19.Quiero mejorar el hero banner del index.html con una imagen de fondo real de cartas Pokémon, con un overlay oscuro semitransparente, altura mínima de 80vh y text-shadow en el texto, modificando solo el CSS del .hero-banner y sus hijos.
 
 20.Quiero agregar badges de estado ("NUEVO", "OFERTA", "POPULAR") sobre las imágenes de las product-cards del index.html, con sus estilos en el CSS (colores verde, rojo y dorado), sin modificar ningún otro estilo existente.
+
+21.Quiero agregar una barra de anuncio fija arriba de todo el sitio, con el mensaje de envío gratis y despacho, en todas las páginas HTML, con sus estilos en el CSS antes de la sección del header. Ademas mejorar el footer de todas las páginas para que sea multi-columna y profesional (Navegación, Legal y Contacto, más copyright y métodos de pago), reemplazando su sección en el CSS y manteniendo la paleta oscura del sitio.
