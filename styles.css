@@ -416,8 +416,9 @@ a:hover {
    10. HERO BANNER
    ========================================================== */
 .hero-banner {
-    min-height: 60vh; /* Ocupa al menos el 60% del alto de la pantalla */
-    background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+    min-height: 80vh; /* Más alto para mayor impacto visual */
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.75) 0%, rgba(15, 52, 96, 0.8) 100%),
+                url('https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1920') center / cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -431,13 +432,15 @@ a:hover {
     font-size: 3.5rem;
     color: #ffffff;
     margin-bottom: 20px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
 .hero-banner .hero-subtitle {
     font-size: 1.2rem;
-    color: #a0a0b0;
+    color: #d0d0e0;
     margin-bottom: 30px;
     max-width: 600px;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
 .hero-banner .hero-btn {
@@ -449,6 +452,7 @@ a:hover {
     font-size: 1.1rem;
     font-weight: 700;
     transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
 }
 
 .hero-banner .hero-btn:hover {
