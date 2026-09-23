@@ -142,6 +142,20 @@ a:hover {
     color: #ffffff;
 }
 
+/* ==========================================================
+   4b. ANNOUNCEMENT BAR
+   ========================================================== */
+.announcement-bar {
+    background-color: #e94560;
+    color: #ffffff;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
 
 /* ==========================================================
    5. HEADER (Título, Subtítulo, Nav)
@@ -1541,44 +1555,86 @@ a:hover {
 .page-footer {
     background-color: #16213e;
     border-top: 2px solid #0f3460;
-    padding: 30px;
-    text-align: center;
+    padding: 50px 30px 20px;
     margin-top: 50px;
 }
 
-.page-footer .footer-copy {
-    color: #a0a0b0;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-bottom: 40px;
 }
 
-.page-footer .footer-social h2 {
+.footer-col h3 {
     color: #e94560;
     font-size: 1.2rem;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #0f3460;
+    padding-bottom: 10px;
 }
 
-.page-footer .footer-social ul {
+.footer-links, .social-list {
     list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
+    padding: 0;
 }
 
-.page-footer .footer-social ul li a {
-    color: #b0b0c0;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: 1px solid #0f3460;
-    transition: background-color 0.3s, color 0.3s;
+.footer-links li, .social-list li {
+    margin-bottom: 12px;
 }
 
-.page-footer .footer-social ul li a:hover {
-    background-color: #0f3460;
+.footer-links a, .social-list a {
+    color: #a0a0b0;
+    font-size: 0.95rem;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover, .social-list a:hover {
     color: #ffffff;
+}
+
+.footer-contact-info {
+    color: #a0a0b0;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.social-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.social-list a {
+    padding: 6px 12px;
+    border: 1px solid #0f3460;
+    border-radius: 6px;
+    background-color: #1a1a2e;
+}
+
+.social-list a:hover {
+    background-color: #e94560;
+    border-color: #e94560;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid #0f3460;
+    color: #6a6a8a;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-payment {
+    color: #a0a0b0;
+    font-weight: 600;
 }
 
 
