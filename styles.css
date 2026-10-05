@@ -301,6 +301,8 @@ a:hover {
     padding: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     z-index: 2000;
+    max-height: calc(100vh - 240px); /* El menú nace ~165px debajo del tope (header sticky): así nunca se corta abajo */
+    overflow-y: auto;
 }
 
 /* Fieldsets dentro del menú de filtros */
@@ -1729,6 +1731,8 @@ a:hover {
         width: 100%;
         position: static;
         margin-top: 10px;
+        max-height: 320px;
+        overflow-y: auto;
     }
 
     /* Barra de búsqueda ocupa 100% */
@@ -1913,7 +1917,8 @@ a:hover {
 
     /* 10. Desplegar el menú cuando el checkbox está chequeado (checked) */
     .menu-toggle-input:checked ~ .header-nav {
-        max-height: 500px;
+        max-height: 70vh; /* Se adapta a la pantalla: el header es sticky y no debe ocupar más que el viewport */
+        overflow-y: auto; /* Si no entra todo, el menú scrollea por dentro */
         padding: 15px 0; /* Restaurar el padding */
         border-top: 1px solid #0f3460;
     }
