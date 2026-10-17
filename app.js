@@ -297,6 +297,7 @@ if (paginaActual === "index") {
 if (paginaActual === "cart") {
     const contenedorItems = document.querySelector(".cart-items");
     const itemsIniciales = document.querySelectorAll(".cart-item");
+    const contenedorResumen = document.querySelector(".cart-summary");
     const filasResumen = document.querySelectorAll(".cart-summary .summary-row");
     const btnPagar = document.querySelector(".checkout-btn");
 
@@ -305,6 +306,9 @@ if (paginaActual === "cart") {
     const valorSubtotal = filasResumen[0].querySelector(".summary-value");
     const valorEnvio = filasResumen[1].querySelector(".summary-value");
     const valorTotalFinal = filasResumen[2].querySelector(".summary-value");
+
+    // Variable para guardar el total final actual y usarlo al pagar
+    let totalFinalActual = 0;
 
     // Insertamos en cada .cart-item los botones "−", "+" y "Eliminar"
     for (const item of itemsIniciales) {
@@ -367,6 +371,7 @@ if (paginaActual === "cart") {
             contenedorItems.append(bloqueVacio);
 
             // Actualizamos el resumen en 0 y deshabilitamos "Pagar Ahora"
+            totalFinalActual = 0;
             labelSubtotal.textContent = "Subtotal (0 artículos)";
             valorSubtotal.textContent = "$0 USD";
             valorEnvio.textContent = "$0 USD";
@@ -378,6 +383,7 @@ if (paginaActual === "cart") {
         // El envío es 0 si el subtotal es >= 150 y 15 si no (operador ternario)
         const costoEnvio = subtotal >= 150 ? 0 : 15;
         const totalFinal = subtotal + costoEnvio;
+        totalFinalActual = totalFinal;
 
         // Actualizamos los textos del resumen todo en enteros
         labelSubtotal.textContent = `Subtotal (${totalArticulos} artículos)`;
@@ -427,6 +433,24 @@ if (paginaActual === "cart") {
             item.remove();
             calcularResumen();
         }
+    });
+
+    // Evento click en "Pagar Ahora"
+    btnPagar.addEventListener("click", () => {
+        const itemsActuales = document.querySelectorAll(".cart-item");
+
+        // Si el carrito está vacío, mostramos un console.warn y no hacemos nada
+        if (itemsActuales.length === 0) {
+            console.warn("No se puede realizar el pago: el carrito está vacío.");
+            return;
+        }
+
+        // Reemplazamos el contenido de .cart-summary con innerHTML y template literal
+        contenedorResumen.innerHTML = `
+            <h2 class="summary-title">¡Compra Confirmada!</h2>
+            <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalFinalActual} USD</p>
+            <a href="index.html" class="continue-shopping">Volver al inicio</a>
+        `;
     });
 
     // Ejecutamos calcularResumen() al cargar la página para sincronizar los valores iniciales
