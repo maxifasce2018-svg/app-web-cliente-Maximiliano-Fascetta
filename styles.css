@@ -363,6 +363,10 @@ a:hover {
     background-color: #c73650;
 }
 
+.btn-apply + .btn-apply {
+    margin-top: 10px;
+}
+
 
 /* ==========================================================
    8. NAV — BARRA DE BÚSQUEDA

@@ -51,3 +51,5 @@ cetral y footer, sobre una tienda de cartas.
 25. Quiero que cada producto del catálogo guarde sus datos (categoría, colección, precio y etiqueta) para que el JS pueda usarlos después.
 
 26. Quiero que el buscador filtre los productos en vivo mientras escribo y avise si no encuentra nada.
+
+27. Quiero que los filtros de categoría, colección y precio funcionen de verdad, mostrando el precio elegido y un botón para limpiarlos.
