@@ -55,3 +55,5 @@ cetral y footer, sobre una tienda de cartas.
 27. Quiero que los filtros de categoría, colección y precio funcionen de verdad, mostrando el precio elegido y un botón para limpiarlos.
 
 28. Quiero que los links "Ofertas" y "Colecciones" del menú funcionen, mostrando solo las ofertas y abriendo el panel de filtros.
+
+29. Quiero poder aumentar, disminuir y eliminar productos desde el carrito y que el subtotal, el envío y el total del carrito se calculen solos, con envío gratis desde $150 USD y un aviso si el carrito queda vacío.
