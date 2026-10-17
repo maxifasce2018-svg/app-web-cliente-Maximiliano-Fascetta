@@ -1929,8 +1929,73 @@ a:hover {
 }
 
 /* ==========================================================
-   27. UTILIDADES JAVASCRIPT
+   27. UTILIDADES JAVASCRIPT Y CONTROLES DEL CARRITO
    ========================================================== */
 .oculto {
     display: none;
+}
+
+.cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btn-qty {
+    background-color: #0f3460;
+    color: #ffffff;
+    border: 1px solid #1a3a6e;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-qty:hover {
+    background-color: #e94560;
+    border-color: #e94560;
+}
+
+.btn-remove-item {
+    background-color: transparent;
+    color: #e94560;
+    border: 1px solid #e94560;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-remove-item:hover {
+    background-color: #e94560;
+    color: #ffffff;
+}
+
+.cart-empty-msg {
+    background-color: #16213e;
+    border: 1px solid #0f3460;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    color: #a0a0b0;
+    font-size: 1.1rem;
+}
+
+.cart-empty-link {
+    display: inline-block;
+    margin-top: 15px;
+    color: #e94560;
+    font-weight: 600;
+}
+
+.checkout-btn[disabled] {
+    background-color: #4a4a6a;
+    cursor: not-allowed;
+    transform: none;
 }
