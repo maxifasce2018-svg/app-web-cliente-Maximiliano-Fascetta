@@ -457,5 +457,89 @@ if (paginaActual === "cart") {
     calcularResumen();
 }
 
+/*
+ * ============================================================
+ *  DETALLE DE PRODUCTO (las 7 páginas producto-*.html)
+ * ============================================================
+ *  Un solo bloque para todas las páginas con data-pagina="producto":
+ *   - Lee el precio desde data-precio del span .price con Number().
+ *   - Muestra debajo del input cantidad "Total: $X USD" y lo actualiza
+ *     con el evento "input" (corrigiendo entre 1 y 20 con if/else).
+ *   - Al enviar "Añadir al Carrito", cancela el submit con preventDefault
+ *     y muestra con createElement + after() el mensaje
+ *     "✔ Agregaste N × NOMBRE" con un link "Ir al carrito", reemplazando
+ *     el mensaje anterior si se vuelve a agregar.
+ * ============================================================
+ */
+if (paginaActual === "producto") {
+    const tituloProducto = document.querySelector(".detail-title").textContent;
+    const spanPrecioUnitario = document.querySelector(".price");
+    const precioUnitario = Number(spanPrecioUnitario.dataset.precio);
+
+    const formAgregar = document.querySelector(".add-to-cart-form");
+    const selectorCantidad = document.querySelector(".quantity-selector");
+    const inputCantidad = document.querySelector("#cantidad");
+
+    // Creamos el texto "Total: $X USD" y lo ubicamos debajo del selector de cantidad
+    const textoTotal = document.createElement("p");
+    textoTotal.classList.add("detail-total-preview");
+    textoTotal.textContent = `Total: $${precioUnitario * Number(inputCantidad.value)} USD`;
+    selectorCantidad.after(textoTotal);
+
+    // Variable para guardar la referencia al mensaje de confirmación y no duplicarlo
+    let mensajeAgregado = null;
+
+    // Función que valida el rango (1 a 20) con if/else y actualiza el total
+    const actualizarTotalProducto = () => {
+        let cantidad = Number(inputCantidad.value);
+
+        if (cantidad < 1) {
+            cantidad = 1;
+            inputCantidad.value = 1;
+        } else if (cantidad > 20) {
+            cantidad = 20;
+            inputCantidad.value = 20;
+        }
+
+        textoTotal.textContent = `Total: $${precioUnitario * cantidad} USD`;
+    };
+
+    // Actualizamos el total en vivo cada vez que cambia el input
+    inputCantidad.addEventListener("input", () => {
+        actualizarTotalProducto();
+    });
+
+    // Al enviar "Añadir al Carrito", cancelamos el submit y mostramos el mensaje con after()
+    formAgregar.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Nos aseguramos de que la cantidad esté validada entre 1 y 20
+        actualizarTotalProducto();
+        const cantidadElegida = Number(inputCantidad.value);
+
+        // Si ya había un mensaje anterior, lo quitamos antes de crear el nuevo
+        if (mensajeAgregado !== null) {
+            mensajeAgregado.remove();
+        }
+
+        mensajeAgregado = document.createElement("div");
+        mensajeAgregado.classList.add("added-to-cart-msg");
+
+        const spanTexto = document.createElement("span");
+        spanTexto.textContent = `✔ Agregaste ${cantidadElegida} × ${tituloProducto}`;
+
+        const linkCarrito = document.createElement("a");
+        linkCarrito.href = "cart.html";
+        linkCarrito.classList.add("added-to-cart-link");
+        linkCarrito.textContent = "Ir al carrito";
+
+        mensajeAgregado.append(spanTexto, linkCarrito);
+
+        // Insertamos el mensaje justo debajo del formulario usando after()
+        formAgregar.after(mensajeAgregado);
+    });
+}
+
+
 
 
