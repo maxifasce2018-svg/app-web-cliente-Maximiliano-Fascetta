@@ -59,3 +59,5 @@ cetral y footer, sobre una tienda de cartas.
 29. Quiero poder aumentar, disminuir y eliminar productos desde el carrito y que el subtotal, el envío y el total del carrito se calculen solos, con envío gratis desde $150 USD y un aviso si el carrito queda vacío.
 
 30. Quiero que el botón "Pagar Ahora" muestre un mensaje de agradecimiento con el total de la compra.
+
+31. Quiero que en cada página de producto se vea el total según la cantidad elegida y un mensaje de confirmación al añadir al carrito.
