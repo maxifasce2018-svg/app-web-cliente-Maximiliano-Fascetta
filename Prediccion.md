@@ -47,3 +47,5 @@ cetral y footer, sobre una tienda de cartas.
 23.Quiero agregar position: sticky a la barra lateral de filtros del index (y dejar el header sticky ya existente) para que acompañe al usuario al bajar por el catálogo, ajustando el top para que no se pise con el header, y desactivándolo en mobile para no romper el responsive.
 
 24.Quiero crear el archivo app.js y vincularlo en todas las páginas, para que el sitio pueda empezar a usar JavaScript sin cambiar nada del diseño.
+
+25. Quiero que cada producto del catálogo guarde sus datos (categoría, colección, precio y etiqueta) para que el JS pueda usarlos después.
