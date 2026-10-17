@@ -2028,3 +2028,42 @@ a:hover {
     font-weight: 700;
     text-decoration: underline;
 }
+
+.auth-form .form-group input.input-error {
+    border-color: #ff4d4d;
+    box-shadow: 0 0 0 2px rgba(255, 77, 77, 0.25);
+}
+
+.error-msg {
+    color: #ff4d4d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+.form-success-msg {
+    background-color: #0f3460;
+    border: 1px solid #28a745;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.char-counter {
+    font-size: 0.85rem;
+    color: #a0a0b0;
+    text-align: right;
+    margin-top: 4px;
+}
+
+.char-limit-warn {
+    color: #e94560;
+    font-weight: 700;
+}

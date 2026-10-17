@@ -540,6 +540,278 @@ if (paginaActual === "producto") {
     });
 }
 
+/*
+ * ============================================================
+ *  FORMULARIO DE REGISTRO (registro.html)
+ * ============================================================
+ *  Sin quitar la validación HTML existente:
+ *   - Arrow function reutilizable mostrarError(input, mensaje) que
+ *     agrega .input-error al input y un <span class="error-msg">
+ *     debajo con createElement + after().
+ *   - Al corregir, quita .input-error y elimina el span con remove().
+ *   - En el submit verifica que nombre y apellido no queden vacíos
+ *     tras trim() y que password y confirm_password sean iguales (!==).
+ *   - Si todo está bien, preventDefault y reemplaza el formulario
+ *     por "¡Cuenta creada, NOMBRE!".
+ * ============================================================
+ */
+if (paginaActual === "registro") {
+    const formRegistro = document.querySelector(".auth-form");
+    const inputNombre = document.querySelector("#nombre");
+    const inputApellido = document.querySelector("#apellido");
+    const inputPassword = document.querySelector("#password");
+    const inputConfirmPassword = document.querySelector("#confirm_password");
+
+    // Arrow function reutilizable para mostrar un error debajo de un input
+    const mostrarError = (input, mensaje) => {
+        // Si ya tenía un mensaje de error previo, lo quitamos primero para no duplicarlo
+        const errorPrevio = input.parentElement.querySelector(".error-msg");
+        if (errorPrevio !== null) {
+            errorPrevio.remove();
+        }
+
+        input.classList.add("input-error");
+
+        const spanError = document.createElement("span");
+        spanError.classList.add("error-msg");
+        spanError.textContent = mensaje;
+        input.after(spanError);
+    };
+
+    // Arrow function para limpiar el error de un input cuando el usuario lo corrige
+    const limpiarError = (input) => {
+        input.classList.remove("input-error");
+        const errorPrevio = input.parentElement.querySelector(".error-msg");
+        if (errorPrevio !== null) {
+            errorPrevio.remove();
+        }
+    };
+
+    // Al escribir en cualquiera de los campos validados, quitamos el error si ya fue corregido
+    inputNombre.addEventListener("input", () => {
+        if (inputNombre.value.trim() !== "") {
+            limpiarError(inputNombre);
+        }
+    });
+
+    inputApellido.addEventListener("input", () => {
+        if (inputApellido.value.trim() !== "") {
+            limpiarError(inputApellido);
+        }
+    });
+
+    inputPassword.addEventListener("input", () => {
+        if (inputPassword.value === inputConfirmPassword.value) {
+            limpiarError(inputConfirmPassword);
+        }
+    });
+
+    inputConfirmPassword.addEventListener("input", () => {
+        if (inputPassword.value === inputConfirmPassword.value) {
+            limpiarError(inputConfirmPassword);
+        }
+    });
+
+    formRegistro.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Limpiamos errores previos antes de volver a validar
+        limpiarError(inputNombre);
+        limpiarError(inputApellido);
+        limpiarError(inputConfirmPassword);
+
+        let hayErrores = false;
+
+        // 1) Verificamos que nombre no quede vacío después de trim()
+        if (inputNombre.value.trim() === "") {
+            mostrarError(inputNombre, "El nombre no puede quedar vacío.");
+            hayErrores = true;
+        }
+
+        // 2) Verificamos que apellido no quede vacío después de trim()
+        if (inputApellido.value.trim() === "") {
+            mostrarError(inputApellido, "El apellido no puede quedar vacío.");
+            hayErrores = true;
+        }
+
+        // 3) Verificamos que password y confirm_password sean iguales (!==)
+        if (inputPassword.value !== inputConfirmPassword.value) {
+            mostrarError(inputConfirmPassword, "Las contraseñas no coinciden.");
+            hayErrores = true;
+        }
+
+        // Si hubo algún error, cortamos acá
+        if (hayErrores) {
+            return;
+        }
+
+        // Si todo está bien, reemplazamos el formulario por "¡Cuenta creada, NOMBRE!"
+        const nombreLimpio = inputNombre.value.trim();
+        const mensajeExito = document.createElement("p");
+        mensajeExito.classList.add("form-success-msg");
+        mensajeExito.textContent = `¡Cuenta creada, ${nombreLimpio}!`;
+
+        formRegistro.after(mensajeExito);
+        formRegistro.remove();
+    });
+}
+
+/*
+ * ============================================================
+ *  FORMULARIO DE INICIO DE SESIÓN (login.html)
+ * ============================================================
+ *  Al enviar el formulario válido:
+ *   - Cancela el envío con preventDefault().
+ *   - Oculta el formulario con classList.add("oculto").
+ *   - Muestra "¡Bienvenido de nuevo!" con template literal.
+ * ============================================================
+ */
+if (paginaActual === "login") {
+    const formLogin = document.querySelector(".auth-form");
+    const inputEmailLogin = document.querySelector("#email");
+
+    formLogin.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const emailIngresado = inputEmailLogin.value.trim();
+        formLogin.classList.add("oculto");
+
+        const mensajeExito = document.createElement("p");
+        mensajeExito.classList.add("form-success-msg");
+        mensajeExito.textContent = `¡Bienvenido de nuevo! (${emailIngresado})`;
+
+        formLogin.after(mensajeExito);
+    });
+}
+
+/*
+ * ============================================================
+ *  FORMULARIO DE RECUPERAR CONTRASEÑA (recuperar-password.html)
+ * ============================================================
+ *  Al enviar el formulario válido:
+ *   - Cancela el envío con preventDefault().
+ *   - Lee el email con .value y oculta el formulario con .oculto.
+ *   - Muestra "Te enviamos un correo a EMAIL" con template literal.
+ * ============================================================
+ */
+if (paginaActual === "recuperar") {
+    const formRecuperar = document.querySelector(".auth-form");
+    const inputEmailRecuperar = document.querySelector("#email");
+
+    formRecuperar.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const email = inputEmailRecuperar.value.trim();
+        formRecuperar.classList.add("oculto");
+
+        const mensajeExito = document.createElement("p");
+        mensajeExito.classList.add("form-success-msg");
+        mensajeExito.textContent = `Te enviamos un correo a ${email}`;
+
+        formRecuperar.after(mensajeExito);
+    });
+}
+
+/*
+ * ============================================================
+ *  FORMULARIO DE CONTACTO (contacto.html)
+ * ============================================================
+ *  - Agrega debajo del textarea un contador "N / 500 caracteres"
+ *    que se actualiza en vivo con "input" usando .length y cambia
+ *    de color con classList.toggle al pasar 450 caracteres.
+ *  - Al enviar el formulario: preventDefault, muestra con console.table
+ *    los datos enviados, oculta el formulario con classList.add("oculto")
+ *    y muestra "¡Gracias NOMBRE! Te responderemos a EMAIL" junto a un
+ *    botón "Enviar otro mensaje" que limpia los campos (.value = "")
+ *    y vuelve a mostrar el formulario.
+ * ============================================================
+ */
+if (paginaActual === "contacto") {
+    const formContacto = document.querySelector(".auth-form");
+    const inputNombreContacto = document.querySelector("#nombre");
+    const inputEmailContacto = document.querySelector("#email");
+    const inputTelefonoContacto = document.querySelector("#telefono");
+    const selectMotivoContacto = document.querySelector("#motivo");
+    const textareaMensaje = document.querySelector("#mensaje");
+    const checkPrivacidad = document.querySelector('input[name="privacidad"]');
+
+    // Creamos el contador "0 / 500 caracteres" debajo del textarea
+    const contadorCaracteres = document.createElement("span");
+    contadorCaracteres.classList.add("char-counter");
+    contadorCaracteres.textContent = `${textareaMensaje.value.length} / 500 caracteres`;
+    textareaMensaje.after(contadorCaracteres);
+
+    // Actualizamos el contador en cada "input" y cambiamos de color al pasar 450
+    textareaMensaje.addEventListener("input", () => {
+        const cantidadCaracteres = textareaMensaje.value.length;
+        contadorCaracteres.textContent = `${cantidadCaracteres} / 500 caracteres`;
+        contadorCaracteres.classList.toggle("char-limit-warn", cantidadCaracteres > 450);
+    });
+
+    let bloqueExitoContacto = null;
+
+    formContacto.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const nombre = inputNombreContacto.value.trim();
+        const email = inputEmailContacto.value.trim();
+        const telefono = inputTelefonoContacto.value.trim();
+        const motivo = selectMotivoContacto.value;
+        const mensaje = textareaMensaje.value.trim();
+
+        // Mostramos los datos enviados con console.table()
+        const datosEnviados = {
+            nombre: nombre,
+            email: email,
+            telefono: telefono,
+            motivo: motivo,
+            mensaje: mensaje
+        };
+        console.table(datosEnviados);
+
+        // Ocultamos el formulario con classList.add("oculto")
+        formContacto.classList.add("oculto");
+
+        // Si ya existía un mensaje previo, lo quitamos antes de crear el nuevo
+        if (bloqueExitoContacto !== null) {
+            bloqueExitoContacto.remove();
+        }
+
+        bloqueExitoContacto = document.createElement("div");
+        bloqueExitoContacto.classList.add("form-success-msg");
+
+        const textoExito = document.createElement("p");
+        textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
+
+        const btnOtroMensaje = document.createElement("button");
+        btnOtroMensaje.type = "button";
+        btnOtroMensaje.classList.add("auth-submit-btn");
+        btnOtroMensaje.textContent = "Enviar otro mensaje";
+
+        // Al hacer click en "Enviar otro mensaje", limpiamos los campos y volvemos a mostrar el form
+        btnOtroMensaje.addEventListener("click", () => {
+            inputNombreContacto.value = "";
+            inputEmailContacto.value = "";
+            inputTelefonoContacto.value = "";
+            selectMotivoContacto.value = "";
+            textareaMensaje.value = "";
+            checkPrivacidad.checked = false;
+
+            // Reseteamos también el contador de caracteres
+            contadorCaracteres.textContent = "0 / 500 caracteres";
+            contadorCaracteres.classList.remove("char-limit-warn");
+
+            bloqueExitoContacto.remove();
+            bloqueExitoContacto = null;
+            formContacto.classList.remove("oculto");
+        });
+
+        bloqueExitoContacto.append(textoExito, btnOtroMensaje);
+        formContacto.after(bloqueExitoContacto);
+    });
+}
+
+
 
 
 
