@@ -542,6 +542,47 @@ if (paginaActual === "producto") {
 
 /*
  * ============================================================
+ *  MOSTRAR / OCULTAR CONTRASEÑA (login.html y registro.html)
+ * ============================================================
+ *  Una sola arrow function reutilizada con querySelectorAll + forEach
+ *  sobre todos los input[type="password"].
+ *  Crea con createElement un botón type="button" al lado del input
+ *  que alterna entre type="password" (ojo tachado) y type="text"
+ *  (ojo abierto) usando getAttribute, setAttribute y un ternario.
+ * ============================================================
+ */
+const agregarTogglePassword = (inputPassword) => {
+    const contenedorPassword = document.createElement("div");
+    contenedorPassword.classList.add("password-wrapper");
+
+    // Insertamos el contenedor en el lugar del input y metemos el input adentro
+    inputPassword.before(contenedorPassword);
+    contenedorPassword.appendChild(inputPassword);
+
+    const btnVerPassword = document.createElement("button");
+    btnVerPassword.type = "button";
+    // Arranca oculto (type="password"), por eso empieza con el ojo tachado
+    btnVerPassword.classList.add("btn-toggle-pass", "ojo-tachado");
+    btnVerPassword.textContent = "👁";
+
+    contenedorPassword.appendChild(btnVerPassword);
+
+    btnVerPassword.addEventListener("click", () => {
+        const tipoActual = inputPassword.getAttribute("type");
+        const nuevoTipo = tipoActual === "password" ? "text" : "password";
+
+        inputPassword.setAttribute("type", nuevoTipo);
+        btnVerPassword.textContent = nuevoTipo === "password" ? "👁" : "👁";
+        btnVerPassword.classList.toggle("ojo-tachado", nuevoTipo === "password");
+    });
+};
+
+// Seleccionamos todos los inputs de contraseña de la página actual y les agregamos el botón
+const inputsPasswordPagina = document.querySelectorAll('input[type="password"]');
+inputsPasswordPagina.forEach(agregarTogglePassword);
+
+/*
+ * ============================================================
  *  FORMULARIO DE REGISTRO (registro.html)
  * ============================================================
  *  Sin quitar la validación HTML existente:
@@ -564,8 +605,9 @@ if (paginaActual === "registro") {
 
     // Arrow function reutilizable para mostrar un error debajo de un input
     const mostrarError = (input, mensaje) => {
+        const grupo = input.closest(".form-group");
         // Si ya tenía un mensaje de error previo, lo quitamos primero para no duplicarlo
-        const errorPrevio = input.parentElement.querySelector(".error-msg");
+        const errorPrevio = grupo.querySelector(".error-msg");
         if (errorPrevio !== null) {
             errorPrevio.remove();
         }
@@ -575,13 +617,19 @@ if (paginaActual === "registro") {
         const spanError = document.createElement("span");
         spanError.classList.add("error-msg");
         spanError.textContent = mensaje;
-        input.after(spanError);
+
+        // Si el input está dentro de .password-wrapper, ponemos el error debajo del wrapper
+        const elementoReferencia = input.parentElement.classList.contains("password-wrapper")
+            ? input.parentElement
+            : input;
+        elementoReferencia.after(spanError);
     };
 
     // Arrow function para limpiar el error de un input cuando el usuario lo corrige
     const limpiarError = (input) => {
         input.classList.remove("input-error");
-        const errorPrevio = input.parentElement.querySelector(".error-msg");
+        const grupo = input.closest(".form-group");
+        const errorPrevio = grupo.querySelector(".error-msg");
         if (errorPrevio !== null) {
             errorPrevio.remove();
         }

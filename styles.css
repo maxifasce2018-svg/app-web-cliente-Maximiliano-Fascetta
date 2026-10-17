@@ -2067,3 +2067,37 @@ a:hover {
     color: #e94560;
     font-weight: 700;
 }
+
+.password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.auth-form .form-group .password-wrapper input {
+    padding-right: 45px;
+}
+
+.btn-toggle-pass {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: #c0c0d0;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+}
+
+.btn-toggle-pass.ojo-tachado::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 2px;
+    right: 2px;
+    height: 2px;
+    background-color: #e94560;
+    transform: rotate(-45deg);
+    pointer-events: none;
+}
