@@ -213,6 +213,71 @@ if (paginaActual === "index") {
         filtrarProductos();
         dropdownFiltros.open = false;
     });
+
+    /*
+     * ============================================================
+     *  ENLACES DEL MENÚ DE NAVEGACIÓN (Ofertas, Colecciones, etc.)
+     * ============================================================
+     *  Escuchamos el click en los links que tienen data-accion:
+     *   - "ofertas": muestra solo las tarjetas con data-badge="oferta".
+     *   - "colecciones": abre el desplegable de filtros con setAttribute("open", "").
+     *   - "inicio" / "catalogo": limpian los filtros y vuelven a mostrar todo.
+     *  Usamos un switch evaluando link.dataset.accion.
+     * ============================================================
+     */
+    const linksMenu = document.querySelectorAll(".nav-list a[data-accion]");
+
+    for (const link of linksMenu) {
+        link.addEventListener("click", () => {
+            const accion = link.dataset.accion;
+
+            switch (accion) {
+                case "ofertas": {
+                    let ofertasVisibles = 0;
+
+                    for (const tarjeta of tarjetas) {
+                        if (tarjeta.dataset.badge === "oferta") {
+                            tarjeta.classList.remove("oculto");
+                            ofertasVisibles = ofertasVisibles + 1;
+                        } else {
+                            tarjeta.classList.add("oculto");
+                        }
+                    }
+
+                    // Actualizamos el contador arriba del grid
+                    contadorProductos.textContent = `Mostrando ${ofertasVisibles} de ${totalProductos} productos`;
+
+                    // Si había un mensaje de "sin resultados" previo, lo quitamos
+                    if (mensajeSinResultados !== null) {
+                        mensajeSinResultados.remove();
+                        mensajeSinResultados = null;
+                    }
+                    break;
+                }
+
+                case "colecciones": {
+                    // Abrimos el desplegable de filtros
+                    dropdownFiltros.setAttribute("open", "");
+                    break;
+                }
+
+                case "inicio":
+                case "catalogo": {
+                    // Reseteamos todos los filtros y el buscador para volver a mostrar todo
+                    for (const checkbox of checkboxesCategoria) {
+                        checkbox.checked = false;
+                    }
+                    selectColeccion.value = "";
+                    inputPrecioMax.value = 500;
+                    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+                    inputBusqueda.value = "";
+
+                    filtrarProductos();
+                    break;
+                }
+            }
+        });
+    }
 }
 
 

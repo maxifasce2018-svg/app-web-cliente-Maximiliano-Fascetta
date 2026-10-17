@@ -53,3 +53,5 @@ cetral y footer, sobre una tienda de cartas.
 26. Quiero que el buscador filtre los productos en vivo mientras escribo y avise si no encuentra nada.
 
 27. Quiero que los filtros de categoría, colección y precio funcionen de verdad, mostrando el precio elegido y un botón para limpiarlos.
+
+28. Quiero que los links "Ofertas" y "Colecciones" del menú funcionen, mostrando solo las ofertas y abriendo el panel de filtros.
