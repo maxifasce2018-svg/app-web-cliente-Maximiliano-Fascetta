@@ -63,3 +63,5 @@ cetral y footer, sobre una tienda de cartas.
 31. Quiero que en cada página de producto se vea el total según la cantidad elegida y un mensaje de confirmación al añadir al carrito.
 
 32. Quiero que el registro avise con mensajes claros si las contraseñas no coinciden o si hay campos vacíos.Y tambien que login, recuperar contraseña y contacto muestren un mensaje de éxito al enviar, y que contacto tenga un contador de caracteres.
+
+33. Quiero un botón para mostrar u ocultar la contraseña en el login y el registro.
