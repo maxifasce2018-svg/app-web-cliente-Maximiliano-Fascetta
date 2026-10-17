@@ -49,3 +49,5 @@ cetral y footer, sobre una tienda de cartas.
 24.Quiero crear el archivo app.js y vincularlo en todas las páginas, para que el sitio pueda empezar a usar JavaScript sin cambiar nada del diseño.
 
 25. Quiero que cada producto del catálogo guarde sus datos (categoría, colección, precio y etiqueta) para que el JS pueda usarlos después.
+
+26. Quiero que el buscador filtre los productos en vivo mientras escribo y avise si no encuentra nada.
