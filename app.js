@@ -70,5 +70,69 @@ if (paginaActual === "index") {
 
     // Mostramos todos los productos en forma de tabla en la consola
     console.table(productos);
+
+    /*
+     * ============================================================
+     *  BUSCADOR EN TIEMPO REAL (HEADER)
+     * ============================================================
+     *  Filtra las .product-card a medida que el usuario escribe
+     *  en el input de búsqueda (evento "input").
+     *  Compara el texto buscado con el título de cada tarjeta
+     *  usando trim(), toLowerCase() e includes().
+     *  Si no coincide ninguna, muestra un mensaje debajo del grid
+     *  creado con createElement, y lo quita con remove() cuando
+     *  vuelve a haber resultados.
+     * ============================================================
+     */
+    const formBusqueda = document.querySelector(".nav-search-bar");
+    const inputBusqueda = document.querySelector(".nav-search-input");
+    const seccionCatalogo = document.querySelector(".catalog");
+
+    // Variable para guardar la referencia al mensaje de "sin resultados"
+    let mensajeSinResultados = null;
+
+    // Cancelamos el envío del formulario para que no recargue la página
+    formBusqueda.addEventListener("submit", (e) => {
+        e.preventDefault();
+    });
+
+    // Escuchamos cada vez que el usuario escribe o borra en el buscador
+    inputBusqueda.addEventListener("input", () => {
+        // Limpiamos espacios en los bordes y pasamos a minúsculas
+        const textoBuscado = inputBusqueda.value.trim().toLowerCase();
+
+        // Contador para saber cuántas tarjetas quedaron visibles
+        let resultadosVisibles = 0;
+
+        for (const tarjeta of tarjetas) {
+            const titulo = tarjeta.querySelector(".product-title").textContent.toLowerCase();
+
+            // Si el título incluye lo que escribió el usuario, mostramos la tarjeta
+            if (titulo.includes(textoBuscado)) {
+                tarjeta.classList.remove("oculto");
+                resultadosVisibles = resultadosVisibles + 1;
+            } else {
+                // Si no coincide, la ocultamos con la clase .oculto
+                tarjeta.classList.add("oculto");
+            }
+        }
+
+        // Si no quedó ninguna tarjeta visible, mostramos el mensaje debajo del grid
+        if (resultadosVisibles === 0) {
+            // Si el mensaje todavía no existe en el DOM, lo creamos y lo agregamos
+            if (mensajeSinResultados === null) {
+                mensajeSinResultados = document.createElement("p");
+                seccionCatalogo.appendChild(mensajeSinResultados);
+            }
+            // Actualizamos el texto con template literal mostrando lo que buscó el usuario
+            mensajeSinResultados.textContent = `No encontramos productos para: ${inputBusqueda.value.trim()}`;
+        } else {
+            // Si volvió a haber resultados y el mensaje estaba en pantalla, lo quitamos
+            if (mensajeSinResultados !== null) {
+                mensajeSinResultados.remove();
+                mensajeSinResultados = null;
+            }
+        }
+    });
 }
 
