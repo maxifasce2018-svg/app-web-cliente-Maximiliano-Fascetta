@@ -45,3 +45,5 @@ cetral y footer, sobre una tienda de cartas.
 22.Quiero mejorar la validación de los formularios (contacto, registro, login y recuperar contraseña): que los emails exijan un dominio válido (usuario@dominio.ext) con type="email" + pattern + title, que el teléfono acepte solo números de Argentina (10 a 13 dígitos, con +54 opcional) usando type="tel", pattern, inputmode="numeric" y maxlength, y agregar autocomplete, minlength y mensajes title claros. También revisar que el buscador del index tenga atributos correctos. Sin tocar JS y sin cambiar el diseño.
 
 23.Quiero agregar position: sticky a la barra lateral de filtros del index (y dejar el header sticky ya existente) para que acompañe al usuario al bajar por el catálogo, ajustando el top para que no se pise con el header, y desactivándolo en mobile para no romper el responsive.
+
+24.Quiero crear el archivo app.js y vincularlo en todas las páginas, para que el sitio pueda empezar a usar JavaScript sin cambiar nada del diseño.
