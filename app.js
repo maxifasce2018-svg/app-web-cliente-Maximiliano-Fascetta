@@ -31,3 +31,44 @@ const paginaActual = document.body.dataset.pagina;
 // Confirmación en consola de que el archivo cargó correctamente
 console.log(`app.js cargado correctamente en la página: ${paginaActual}`);
 
+/*
+ * ============================================================
+ *  CATÁLOGO: LECTURA DE DATOS DE LAS TARJETAS (data-*)
+ * ============================================================
+ *  Cada .product-card del index.html tiene atributos data-*:
+ *      data-categoria -> mismo valor que los checkboxes del filtro
+ *      data-coleccion -> mismo valor que las opciones del select
+ *      data-precio    -> solo el número (sin "$" ni "USD")
+ *      data-badge     -> nuevo, oferta o popular
+ *  Desde JS se leen con la propiedad dataset de cada elemento.
+ *  Recorremos las tarjetas con for...of, armamos un array de
+ *  objetos y lo mostramos en consola con console.table().
+ * ============================================================
+ */
+if (paginaActual === "index") {
+    // Seleccionamos todas las tarjetas de producto
+    const tarjetas = document.querySelectorAll(".product-card");
+
+    // Array donde vamos a guardar un objeto por cada producto
+    const productos = [];
+
+    for (const tarjeta of tarjetas) {
+        // El nombre lo tomamos del título visible de la tarjeta
+        const nombre = tarjeta.querySelector(".product-title").textContent;
+
+        const producto = {
+            nombre: nombre,
+            categoria: tarjeta.dataset.categoria,
+            coleccion: tarjeta.dataset.coleccion,
+            // dataset siempre devuelve texto, por eso lo convertimos a número
+            precio: Number(tarjeta.dataset.precio),
+            badge: tarjeta.dataset.badge
+        };
+
+        productos.push(producto);
+    }
+
+    // Mostramos todos los productos en forma de tabla en la consola
+    console.table(productos);
+}
+
