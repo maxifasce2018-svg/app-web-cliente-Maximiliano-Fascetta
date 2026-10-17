@@ -280,4 +280,158 @@ if (paginaActual === "index") {
     }
 }
 
+/*
+ * ============================================================
+ *  CARRITO DE COMPRAS INTERACTIVO (cart.html)
+ * ============================================================
+ *  - Inserta en cada .cart-item los botones "−", "+" y "Eliminar"
+ *    usando createElement y append.
+ *  - Usa UN solo addEventListener "click" en .cart-items (delegación)
+ *    detectando el botón con e.target.matches() y el item con closest().
+ *  - Cantidad entre 1 y 20 (if/else).
+ *  - calcularResumen() usa reduce() con valor inicial 0 para sumar
+ *    la cantidad de artículos y el subtotal, y un operador ternario
+ *    para el envío (0 si subtotal >= 150, 15 si no).
+ * ============================================================
+ */
+if (paginaActual === "cart") {
+    const contenedorItems = document.querySelector(".cart-items");
+    const itemsIniciales = document.querySelectorAll(".cart-item");
+    const filasResumen = document.querySelectorAll(".cart-summary .summary-row");
+    const btnPagar = document.querySelector(".checkout-btn");
+
+    // Referencias a los elementos del Resumen de Compra
+    const labelSubtotal = filasResumen[0].querySelector(".summary-label");
+    const valorSubtotal = filasResumen[0].querySelector(".summary-value");
+    const valorEnvio = filasResumen[1].querySelector(".summary-value");
+    const valorTotalFinal = filasResumen[2].querySelector(".summary-value");
+
+    // Insertamos en cada .cart-item los botones "−", "+" y "Eliminar"
+    for (const item of itemsIniciales) {
+        const infoItem = item.querySelector(".cart-item-info");
+
+        const contenedorControles = document.createElement("div");
+        contenedorControles.classList.add("cart-item-controls");
+
+        const btnRestar = document.createElement("button");
+        btnRestar.type = "button";
+        btnRestar.classList.add("btn-qty", "btn-restar");
+        btnRestar.textContent = "−";
+
+        const btnSumar = document.createElement("button");
+        btnSumar.type = "button";
+        btnSumar.classList.add("btn-qty", "btn-sumar");
+        btnSumar.textContent = "+";
+
+        const btnEliminar = document.createElement("button");
+        btnEliminar.type = "button";
+        btnEliminar.classList.add("btn-remove-item");
+        btnEliminar.textContent = "Eliminar";
+
+        contenedorControles.append(btnRestar, btnSumar, btnEliminar);
+        infoItem.append(contenedorControles);
+    }
+
+    // Arrow function que recalcula el resumen del carrito con reduce()
+    const calcularResumen = () => {
+        const itemsActuales = Array.from(document.querySelectorAll(".cart-item"));
+
+        // Calculamos la cantidad total de artículos con reduce (valor inicial 0)
+        const totalArticulos = itemsActuales.reduce((acumulador, item) => {
+            return acumulador + Number(item.dataset.cantidad);
+        }, 0);
+
+        // Calculamos el subtotal sumando precio * cantidad de cada item (valor inicial 0)
+        const subtotal = itemsActuales.reduce((acumulador, item) => {
+            const precio = Number(item.dataset.precio);
+            const cantidad = Number(item.dataset.cantidad);
+            return acumulador + (precio * cantidad);
+        }, 0);
+
+        // Si el carrito quedó vacío, mostramos el mensaje, vaciamos .cart-items y deshabilitamos el botón
+        if (itemsActuales.length === 0) {
+            contenedorItems.innerHTML = "";
+
+            const bloqueVacio = document.createElement("div");
+            bloqueVacio.classList.add("cart-empty-msg");
+
+            const textoVacio = document.createElement("p");
+            textoVacio.textContent = "Tu carrito está vacío";
+
+            const linkCatalogo = document.createElement("a");
+            linkCatalogo.href = "index.html";
+            linkCatalogo.classList.add("cart-empty-link");
+            linkCatalogo.textContent = "Volver al catálogo";
+
+            bloqueVacio.append(textoVacio, linkCatalogo);
+            contenedorItems.append(bloqueVacio);
+
+            // Actualizamos el resumen en 0 y deshabilitamos "Pagar Ahora"
+            labelSubtotal.textContent = "Subtotal (0 artículos)";
+            valorSubtotal.textContent = "$0 USD";
+            valorEnvio.textContent = "$0 USD";
+            valorTotalFinal.textContent = "$0 USD";
+            btnPagar.setAttribute("disabled", "");
+            return;
+        }
+
+        // El envío es 0 si el subtotal es >= 150 y 15 si no (operador ternario)
+        const costoEnvio = subtotal >= 150 ? 0 : 15;
+        const totalFinal = subtotal + costoEnvio;
+
+        // Actualizamos los textos del resumen todo en enteros
+        labelSubtotal.textContent = `Subtotal (${totalArticulos} artículos)`;
+        valorSubtotal.textContent = `$${subtotal} USD`;
+        valorEnvio.textContent = costoEnvio === 0 ? "GRATIS" : `$${costoEnvio} USD`;
+        valorTotalFinal.textContent = `$${totalFinal} USD`;
+    };
+
+    // UN solo addEventListener "click" en .cart-items (delegación de eventos)
+    contenedorItems.addEventListener("click", (e) => {
+        // Buscamos a qué .cart-item pertenece el botón clickeado
+        const item = e.target.closest(".cart-item");
+        if (item === null) {
+            return;
+        }
+
+        const precio = Number(item.dataset.precio);
+        let cantidad = Number(item.dataset.cantidad);
+
+        // Detectamos qué botón se tocó usando e.target.matches()
+        if (e.target.matches(".btn-restar")) {
+            // Cantidad mínima 1
+            if (cantidad > 1) {
+                cantidad = cantidad - 1;
+            } else {
+                cantidad = 1;
+            }
+
+            item.dataset.cantidad = cantidad;
+            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidad}`;
+            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidad} USD`;
+            calcularResumen();
+        } else if (e.target.matches(".btn-sumar")) {
+            // Cantidad máxima 20
+            if (cantidad < 20) {
+                cantidad = cantidad + 1;
+            } else {
+                cantidad = 20;
+            }
+
+            item.dataset.cantidad = cantidad;
+            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidad}`;
+            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidad} USD`;
+            calcularResumen();
+        } else if (e.target.matches(".btn-remove-item")) {
+            // Quitamos el item del DOM y recalculamos el resumen
+            item.remove();
+            calcularResumen();
+        }
+    });
+
+    // Ejecutamos calcularResumen() al cargar la página para sincronizar los valores iniciales
+    calcularResumen();
+}
+
+
 
