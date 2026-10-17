@@ -57,3 +57,5 @@ cetral y footer, sobre una tienda de cartas.
 28. Quiero que los links "Ofertas" y "Colecciones" del menú funcionen, mostrando solo las ofertas y abriendo el panel de filtros.
 
 29. Quiero poder aumentar, disminuir y eliminar productos desde el carrito y que el subtotal, el envío y el total del carrito se calculen solos, con envío gratis desde $150 USD y un aviso si el carrito queda vacío.
+
+30. Quiero que el botón "Pagar Ahora" muestre un mensaje de agradecimiento con el total de la compra.
