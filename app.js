@@ -73,58 +73,104 @@ if (paginaActual === "index") {
 
     /*
      * ============================================================
-     *  BUSCADOR EN TIEMPO REAL (HEADER)
+     *  BUSCADOR EN TIEMPO REAL Y SISTEMA DE FILTROS
      * ============================================================
-     *  Filtra las .product-card a medida que el usuario escribe
-     *  en el input de búsqueda (evento "input").
-     *  Compara el texto buscado con el título de cada tarjeta
-     *  usando trim(), toLowerCase() e includes().
-     *  Si no coincide ninguna, muestra un mensaje debajo del grid
-     *  creado con createElement, y lo quita con remove() cuando
-     *  vuelve a haber resultados.
+     *  Tanto el buscador del header como el formulario de filtros
+     *  conviven en una misma función filtrarProductos(), para que
+     *  al escribir o al aplicar/limpiar filtros se respeten ambas
+     *  condiciones al mismo tiempo.
      * ============================================================
      */
     const formBusqueda = document.querySelector(".nav-search-bar");
     const inputBusqueda = document.querySelector(".nav-search-input");
     const seccionCatalogo = document.querySelector(".catalog");
+    const grillaProductos = document.querySelector(".product-grid");
+
+    const formFiltros = document.querySelector(".filter-form");
+    const dropdownFiltros = document.querySelector(".nav-filter-dropdown");
+    const checkboxesCategoria = document.querySelectorAll('input[name="categoria"]');
+    const selectColeccion = document.querySelector(".filter-select");
+    const inputPrecioMax = document.querySelector('input[name="precio_max"]');
+    const grupoRange = document.querySelector(".range-group");
+
+    // 1) Span al lado del range "Precio máximo" que muestra "Hasta $X USD" en vivo
+    const spanPrecio = document.createElement("span");
+    spanPrecio.classList.add("range-value");
+    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+    grupoRange.appendChild(spanPrecio);
+
+    inputPrecioMax.addEventListener("input", () => {
+        spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+    });
+
+    // 3) Contador arriba del grid: "Mostrando X de 7 productos"
+    const totalProductos = tarjetas.length;
+    const contadorProductos = document.createElement("p");
+    contadorProductos.textContent = `Mostrando ${totalProductos} de ${totalProductos} productos`;
+    seccionCatalogo.insertBefore(contadorProductos, grillaProductos);
+
+    // 4) Botón "Limpiar filtros" dentro del formulario de filtros
+    const btnLimpiar = document.createElement("button");
+    btnLimpiar.type = "button";
+    btnLimpiar.classList.add("btn-apply");
+    btnLimpiar.textContent = "Limpiar filtros";
+    formFiltros.appendChild(btnLimpiar);
 
     // Variable para guardar la referencia al mensaje de "sin resultados"
     let mensajeSinResultados = null;
 
-    // Cancelamos el envío del formulario para que no recargue la página
-    formBusqueda.addEventListener("submit", (e) => {
-        e.preventDefault();
-    });
-
-    // Escuchamos cada vez que el usuario escribe o borra en el buscador
-    inputBusqueda.addEventListener("input", () => {
-        // Limpiamos espacios en los bordes y pasamos a minúsculas
+    // Función que evalúa el buscador + los filtros activos al mismo tiempo
+    const filtrarProductos = () => {
+        // Texto del buscador limpio y en minúsculas
         const textoBuscado = inputBusqueda.value.trim().toLowerCase();
+
+        // Obtenemos los checkboxes marcados y usamos map() para quedarnos con sus value
+        const checksMarcados = document.querySelectorAll('input[name="categoria"]:checked');
+        const categoriasSeleccionadas = Array.from(checksMarcados).map((checkbox) => checkbox.value);
+
+        // Leemos el select de colección y el range de precio máximo
+        const coleccionSeleccionada = selectColeccion.value;
+        const precioMaximo = Number(inputPrecioMax.value);
 
         // Contador para saber cuántas tarjetas quedaron visibles
         let resultadosVisibles = 0;
 
         for (const tarjeta of tarjetas) {
             const titulo = tarjeta.querySelector(".product-title").textContent.toLowerCase();
+            const categoriaTarjeta = tarjeta.dataset.categoria;
+            const coleccionTarjeta = tarjeta.dataset.coleccion;
+            const precioTarjeta = Number(tarjeta.dataset.precio);
 
-            // Si el título incluye lo que escribió el usuario, mostramos la tarjeta
-            if (titulo.includes(textoBuscado)) {
+            // Condición 1: coincide con el texto del buscador
+            const coincideBusqueda = titulo.includes(textoBuscado);
+
+            // Condición 2: si no hay categorías marcadas se muestran todas; si hay, debe estar incluida
+            const coincideCategoria = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaTarjeta);
+
+            // Condición 3: si el select está en "" (todas) o coincide con la colección de la tarjeta
+            const coincideColeccion = coleccionSeleccionada === "" || coleccionTarjeta === coleccionSeleccionada;
+
+            // Condición 4: el precio de la tarjeta es menor o igual al máximo elegido
+            const coincidePrecio = precioTarjeta <= precioMaximo;
+
+            // Combinamos todas las condiciones con &&
+            if (coincideBusqueda && coincideCategoria && coincideColeccion && coincidePrecio) {
                 tarjeta.classList.remove("oculto");
                 resultadosVisibles = resultadosVisibles + 1;
             } else {
-                // Si no coincide, la ocultamos con la clase .oculto
                 tarjeta.classList.add("oculto");
             }
         }
 
+        // Actualizamos el texto del contador arriba del grid
+        contadorProductos.textContent = `Mostrando ${resultadosVisibles} de ${totalProductos} productos`;
+
         // Si no quedó ninguna tarjeta visible, mostramos el mensaje debajo del grid
         if (resultadosVisibles === 0) {
-            // Si el mensaje todavía no existe en el DOM, lo creamos y lo agregamos
             if (mensajeSinResultados === null) {
                 mensajeSinResultados = document.createElement("p");
                 seccionCatalogo.appendChild(mensajeSinResultados);
             }
-            // Actualizamos el texto con template literal mostrando lo que buscó el usuario
             mensajeSinResultados.textContent = `No encontramos productos para: ${inputBusqueda.value.trim()}`;
         } else {
             // Si volvió a haber resultados y el mensaje estaba en pantalla, lo quitamos
@@ -133,6 +179,40 @@ if (paginaActual === "index") {
                 mensajeSinResultados = null;
             }
         }
+    };
+
+    // Cancelamos el envío del formulario de búsqueda para que no recargue la página
+    formBusqueda.addEventListener("submit", (e) => {
+        e.preventDefault();
+    });
+
+    // Escuchamos cada vez que el usuario escribe o borra en el buscador
+    inputBusqueda.addEventListener("input", () => {
+        filtrarProductos();
+    });
+
+    // 2) Al enviar el formulario de filtros, cancelamos el submit, filtramos y cerramos el menú
+    formFiltros.addEventListener("submit", (e) => {
+        e.preventDefault();
+        filtrarProductos();
+        dropdownFiltros.open = false;
+    });
+
+    // Evento del botón "Limpiar filtros": resetea los controles, muestra todo y cierra el menú
+    btnLimpiar.addEventListener("click", () => {
+        for (const checkbox of checkboxesCategoria) {
+            checkbox.checked = false;
+        }
+        selectColeccion.value = "";
+        inputPrecioMax.value = 500;
+        spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+
+        // También limpiamos el buscador para mostrar todos los productos
+        inputBusqueda.value = "";
+
+        filtrarProductos();
+        dropdownFiltros.open = false;
     });
 }
+
 
