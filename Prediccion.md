@@ -67,3 +67,5 @@ cetral y footer, sobre una tienda de cartas.
 33.Quiero un botón para mostrar u ocultar la contraseña en el login y el registro.
 
 34.Quiero que en las preguntas frecuentes se abra una sola a la vez.
+
+35.Quiero que el menú mobile y los filtros se cierren solos, y que el link de la página actual se resalte en el menú.

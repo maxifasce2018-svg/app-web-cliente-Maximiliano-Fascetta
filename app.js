@@ -181,21 +181,61 @@ if (paginaActual === "index") {
         }
     };
 
-    // Cancelamos el envío del formulario de búsqueda para que no recargue la página
+    const headerPagina = document.querySelector(".page-header");
+
+    // Función que lleva la pantalla al inicio de "Catálogo de Productos"
+    // restando la altura del header sticky para que no tape el título
+    const irACatalogo = () => {
+        const alturaHeader = headerPagina.offsetHeight;
+        const posicionCatalogo = seccionCatalogo.offsetTop - alturaHeader - 15;
+        window.scrollTo({ top: posicionCatalogo, behavior: "smooth" });
+    };
+
+    // Cancelamos el envío del formulario de búsqueda y llevamos la vista a los productos
     formBusqueda.addEventListener("submit", (e) => {
         e.preventDefault();
+        irACatalogo();
+        inputBusqueda.blur();
     });
 
     // Escuchamos cada vez que el usuario escribe o borra en el buscador
     inputBusqueda.addEventListener("input", () => {
         filtrarProductos();
+
+        // En celular, acomodamos la vista en la sección de productos mientras busca
+        if (window.innerWidth <= 768 && inputBusqueda.value.trim() !== "") {
+            irACatalogo();
+        }
     });
+
+    // En celular (<= 768px), ubicamos la barra de búsqueda afuera, al lado del botón hamburguesa
+    const barraMobile = document.querySelector(".mobile-menu-bar");
+    const btnCarritoMobile = document.querySelector(".mobile-cart-btn");
+    const listaAccionesNav = document.querySelector(".nav-actions-list");
+
+    const ubicarBuscadorSegunPantalla = () => {
+        if (window.innerWidth <= 768) {
+            // Lo ponemos dentro de .mobile-menu-bar entre el botón hamburguesa y el carrito
+            if (formBusqueda.parentElement !== barraMobile) {
+                barraMobile.insertBefore(formBusqueda, btnCarritoMobile);
+            }
+        } else {
+            // En escritorio vuelve a su lugar original dentro del <nav>
+            if (formBusqueda.parentElement !== listaAccionesNav.parentElement) {
+                listaAccionesNav.before(formBusqueda);
+            }
+        }
+    };
+
+    ubicarBuscadorSegunPantalla();
+    window.addEventListener("resize", ubicarBuscadorSegunPantalla);
 
     // 2) Al enviar el formulario de filtros, cancelamos el submit, filtramos y cerramos el menú
     formFiltros.addEventListener("submit", (e) => {
         e.preventDefault();
         filtrarProductos();
         dropdownFiltros.open = false;
+        irACatalogo();
     });
 
     // Evento del botón "Limpiar filtros": resetea los controles, muestra todo y cierra el menú
@@ -212,6 +252,7 @@ if (paginaActual === "index") {
 
         filtrarProductos();
         dropdownFiltros.open = false;
+        irACatalogo();
     });
 
     /*
@@ -228,11 +269,12 @@ if (paginaActual === "index") {
     const linksMenu = document.querySelectorAll(".nav-list a[data-accion]");
 
     for (const link of linksMenu) {
-        link.addEventListener("click", () => {
+        link.addEventListener("click", (e) => {
             const accion = link.dataset.accion;
 
             switch (accion) {
                 case "ofertas": {
+                    e.preventDefault();
                     let ofertasVisibles = 0;
 
                     for (const tarjeta of tarjetas) {
@@ -252,17 +294,34 @@ if (paginaActual === "index") {
                         mensajeSinResultados.remove();
                         mensajeSinResultados = null;
                     }
+                    irACatalogo();
                     break;
                 }
 
                 case "colecciones": {
+                    e.preventDefault();
                     // Abrimos el desplegable de filtros
                     dropdownFiltros.setAttribute("open", "");
                     break;
                 }
 
-                case "inicio":
+                case "inicio": {
+                    e.preventDefault();
+                    for (const checkbox of checkboxesCategoria) {
+                        checkbox.checked = false;
+                    }
+                    selectColeccion.value = "";
+                    inputPrecioMax.value = 500;
+                    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+                    inputBusqueda.value = "";
+
+                    filtrarProductos();
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    break;
+                }
+
                 case "catalogo": {
+                    e.preventDefault();
                     // Reseteamos todos los filtros y el buscador para volver a mostrar todo
                     for (const checkbox of checkboxesCategoria) {
                         checkbox.checked = false;
@@ -273,6 +332,7 @@ if (paginaActual === "index") {
                     inputBusqueda.value = "";
 
                     filtrarProductos();
+                    irACatalogo();
                     break;
                 }
             }
@@ -892,6 +952,70 @@ const configurarAcordeonExclusivo = (selector) => {
 // Aplicamos la lógica a la FAQ de contacto.html y a los acordeones de producto-*.html
 configurarAcordeonExclusivo(".faq-item");
 configurarAcordeonExclusivo(".product-accordion");
+
+/*
+ * ============================================================
+ *  MEJORAS DE NAVEGACIÓN (TODAS LAS PÁGINAS)
+ * ============================================================
+ *  1) Cerrar el menú mobile al tocar cualquier link del nav
+ *     poniendo .checked = false en #menu-toggle.
+ *  2) Cerrar el desplegable de Filtros del index al hacer click
+ *     fuera (click en document + closest(".nav-filter-dropdown")
+ *     + removeAttribute("open")), usando stopPropagation para que
+ *     los clicks dentro no lo cierren.
+ *  3) Resaltar el link del menú de la página actual comparando
+ *     document.body.dataset.pagina con getAttribute("href") de
+ *     cada link y agregando la clase .activo.
+ * ============================================================
+ */
+const checkboxMenuMobile = document.querySelector("#menu-toggle");
+const linksNavegacion = document.querySelectorAll(".header-nav a");
+
+// 1) y 3) Recorremos todos los links del nav
+linksNavegacion.forEach((link) => {
+    // 1) Al tocar cualquier link del nav, cerramos el menú mobile
+    link.addEventListener("click", () => {
+        if (checkboxMenuMobile !== null) {
+            checkboxMenuMobile.checked = false;
+        }
+    });
+
+    // 3) Comparamos document.body.dataset.pagina con getAttribute("href")
+    const hrefLink = link.getAttribute("href");
+
+    const esIndex = paginaActual === "index" && (hrefLink === "#inicio" || hrefLink === "index.html");
+    const esProducto = paginaActual === "producto" && hrefLink === "index.html#catalogo";
+    const esContacto = paginaActual === "contacto" && hrefLink === "contacto.html";
+    const esLogin = paginaActual === "login" && hrefLink === "login.html";
+    const esRegistro = paginaActual === "registro" && hrefLink === "registro.html";
+    const esCarrito = paginaActual === "cart" && hrefLink === "cart.html";
+
+    if (esIndex || esProducto || esContacto || esLogin || esRegistro || esCarrito) {
+        link.classList.add("activo");
+    }
+});
+
+// 2) Cerrar el desplegable de Filtros al hacer click fuera
+const menuFiltrosIndex = document.querySelector(".nav-filter-dropdown");
+
+if (menuFiltrosIndex !== null) {
+    const panelInteriorFiltros = menuFiltrosIndex.querySelector(".nav-filter-menu");
+
+    // Usamos stopPropagation dentro del panel para que los clicks internos no suban al document
+    if (panelInteriorFiltros !== null) {
+        panelInteriorFiltros.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    // Si el click en el documento fue fuera de .nav-filter-dropdown, lo cerramos
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".nav-filter-dropdown") === null) {
+            menuFiltrosIndex.removeAttribute("open");
+        }
+    });
+}
+
 
 
 
