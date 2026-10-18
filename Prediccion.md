@@ -48,20 +48,22 @@ cetral y footer, sobre una tienda de cartas.
 
 24.Quiero crear el archivo app.js y vincularlo en todas las páginas, para que el sitio pueda empezar a usar JavaScript sin cambiar nada del diseño.
 
-25. Quiero que cada producto del catálogo guarde sus datos (categoría, colección, precio y etiqueta) para que el JS pueda usarlos después.
+25.Quiero que cada producto del catálogo guarde sus datos (categoría, colección, precio y etiqueta) para que el JS pueda usarlos después.
 
-26. Quiero que el buscador filtre los productos en vivo mientras escribo y avise si no encuentra nada.
+26.Quiero que el buscador filtre los productos en vivo mientras escribo y avise si no encuentra nada.
 
-27. Quiero que los filtros de categoría, colección y precio funcionen de verdad, mostrando el precio elegido y un botón para limpiarlos.
+27.Quiero que los filtros de categoría, colección y precio funcionen de verdad, mostrando el precio elegido y un botón para limpiarlos.
 
-28. Quiero que los links "Ofertas" y "Colecciones" del menú funcionen, mostrando solo las ofertas y abriendo el panel de filtros.
+28.Quiero que los links "Ofertas" y "Colecciones" del menú funcionen, mostrando solo las ofertas y abriendo el panel de filtros.
 
-29. Quiero poder aumentar, disminuir y eliminar productos desde el carrito y que el subtotal, el envío y el total del carrito se calculen solos, con envío gratis desde $150 USD y un aviso si el carrito queda vacío.
+29.Quiero poder aumentar, disminuir y eliminar productos desde el carrito y que el subtotal, el envío y el total del carrito se calculen solos, con envío gratis desde $150 USD y un aviso si el carrito queda vacío.
 
-30. Quiero que el botón "Pagar Ahora" muestre un mensaje de agradecimiento con el total de la compra.
+30.Quiero que el botón "Pagar Ahora" muestre un mensaje de agradecimiento con el total de la compra.
 
-31. Quiero que en cada página de producto se vea el total según la cantidad elegida y un mensaje de confirmación al añadir al carrito.
+31.Quiero que en cada página de producto se vea el total según la cantidad elegida y un mensaje de confirmación al añadir al carrito.
 
-32. Quiero que el registro avise con mensajes claros si las contraseñas no coinciden o si hay campos vacíos.Y tambien que login, recuperar contraseña y contacto muestren un mensaje de éxito al enviar, y que contacto tenga un contador de caracteres.
+32.Quiero que el registro avise con mensajes claros si las contraseñas no coinciden o si hay campos vacíos.Y tambien que login, recuperar contraseña y contacto muestren un mensaje de éxito al enviar, y que contacto tenga un contador de caracteres.
 
-33. Quiero un botón para mostrar u ocultar la contraseña en el login y el registro.
+33.Quiero un botón para mostrar u ocultar la contraseña en el login y el registro.
+
+34.Quiero que en las preguntas frecuentes se abra una sola a la vez.
