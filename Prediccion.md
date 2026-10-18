@@ -69,3 +69,5 @@ cetral y footer, sobre una tienda de cartas.
 34.Quiero que en las preguntas frecuentes se abra una sola a la vez.
 
 35.Quiero que el menú mobile y los filtros se cierren solos, y que el link de la página actual se resalte en el menú.
+
+36. Quiero una revisión final de todo el JS para que quede ordenado, comentado y sin errores.
