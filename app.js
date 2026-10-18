@@ -859,6 +859,41 @@ if (paginaActual === "contacto") {
     });
 }
 
+/*
+ * ============================================================
+ *  ACORDEONES EXCLUSIVOS (<details>) EN FAQ Y PRODUCTOS
+ * ============================================================
+ *  Tanto en la FAQ de contacto.html (.faq-item) como en las
+ *  páginas de producto (.product-accordion), al abrir un <details>
+ *  se cierran automáticamente los demás.
+ *  Usamos querySelectorAll, el evento "toggle", hasAttribute("open")
+ *  y removeAttribute("open") con forEach, comparando con !== para
+ *  no cerrar el que se acaba de abrir.
+ * ============================================================
+ */
+const configurarAcordeonExclusivo = (selector) => {
+    const acordeones = document.querySelectorAll(selector);
+
+    acordeones.forEach((acordeonActual) => {
+        acordeonActual.addEventListener("toggle", () => {
+            // Verificamos si el acordeón se acaba de abrir con hasAttribute("open")
+            if (acordeonActual.hasAttribute("open")) {
+                // Recorremos todos y cerramos los que sean distintos (!==) al que se abrió
+                acordeones.forEach((otroAcordeon) => {
+                    if (otroAcordeon !== acordeonActual) {
+                        otroAcordeon.removeAttribute("open");
+                    }
+                });
+            }
+        });
+    });
+};
+
+// Aplicamos la lógica a la FAQ de contacto.html y a los acordeones de producto-*.html
+configurarAcordeonExclusivo(".faq-item");
+configurarAcordeonExclusivo(".product-accordion");
+
+
 
 
 
