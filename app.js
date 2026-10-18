@@ -14,344 +14,362 @@
  *  para que el JS sepa en qué página está y ejecute solo
  *  el código que corresponde.
  *
- *  REGLAS DEL CÓDIGO:
- *   - Usar const por defecto y let solo si la variable se reasigna.
- *   - NO usar var (es la forma antigua y causa bugs por el hoisting).
- *   - Comparar siempre con === y !== (nunca == ni !=).
- *   - Terminar cada línea con punto y coma ;
- *   - Preferir arrow functions para los callbacks.
- *   - Solo HTML, CSS y JS básico visto en clase
- *     (sin localStorage, Date, toFixed ni librerías).
+ *  ÍNDICE DE SECCIONES DEL ARCHIVO:
+ *   1. Inicialización y lectura de data-pagina (Todas las páginas)
+ *   2. Catálogo: lectura de datos data-* de las tarjetas (index.html)
+ *   3. Buscador en tiempo real y sistema de filtros (index.html)
+ *   4. Enlaces del menú de navegación con switch (index.html)
+ *   5. Carrito de compras interactivo y resumen con reduce (cart.html)
+ *   6. Detalle de producto: total en vivo y agregar al carrito (producto-*.html)
+ *   7. Mostrar / ocultar contraseña con botón 👁 (login.html y registro.html)
+ *   8. Validación del formulario de registro (registro.html)
+ *   9. Formulario de inicio de sesión (login.html)
+ *  10. Formulario de recuperar contraseña (recuperar-password.html)
+ *  11. Formulario de contacto y contador de caracteres (contacto.html)
+ *  12. Acordeones exclusivos <details> en FAQ y productos (contacto.html y producto-*.html)
+ *  13. Mejoras de navegación: menú mobile, click afuera en filtros y link activo (Todas las páginas)
+ *
  * ============================================================
  */
-
-// Leemos en qué página estamos usando el atributo data-pagina del <body>
-const paginaActual = document.body.dataset.pagina;
-
-// Confirmación en consola de que el archivo cargó correctamente
-console.log(`app.js cargado correctamente en la página: ${paginaActual}`);
 
 /*
  * ============================================================
- *  CATÁLOGO: LECTURA DE DATOS DE LAS TARJETAS (data-*)
+ *  1. INICIALIZACIÓN Y LECTURA DE PÁGINA ACTUAL
  * ============================================================
- *  Cada .product-card del index.html tiene atributos data-*:
- *      data-categoria -> mismo valor que los checkboxes del filtro
- *      data-coleccion -> mismo valor que las opciones del select
- *      data-precio    -> solo el número (sin "$" ni "USD")
- *      data-badge     -> nuevo, oferta o popular
- *  Desde JS se leen con la propiedad dataset de cada elemento.
- *  Recorremos las tarjetas con for...of, armamos un array de
- *  objetos y lo mostramos en consola con console.table().
+ *  Páginas donde actúa: TODAS.
+ *  Qué hace: Lee document.body.dataset.pagina para identificar
+ *  la página actual y muestra un mensaje en consola. Si falta
+ *  el atributo, avisa con console.warn.
+ * ============================================================
+ */
+const paginaActual = document.body.dataset.pagina;
+
+if (!paginaActual) {
+    console.warn("Advertencia: el <body> no tiene definido el atributo data-pagina.");
+} else {
+    console.log(`app.js cargado correctamente en la página: ${paginaActual}`);
+}
+
+/*
+ * ============================================================
+ *  2. CATÁLOGO: LECTURA DE DATOS DE LAS TARJETAS (data-*)
+ * ============================================================
+ *  Página donde actúa: index.html (data-pagina="index").
+ *  Qué hace: Recorre las .product-card con for...of, lee sus
+ *  atributos data-categoria, data-coleccion, data-precio (con
+ *  Number()) y data-badge mediante dataset, arma un array de
+ *  objetos y lo muestra en consola con console.table().
  * ============================================================
  */
 if (paginaActual === "index") {
-    // Seleccionamos todas las tarjetas de producto
     const tarjetas = document.querySelectorAll(".product-card");
 
-    // Array donde vamos a guardar un objeto por cada producto
-    const productos = [];
+    if (tarjetas.length === 0) {
+        console.warn("No se encontraron tarjetas .product-card en index.html.");
+    } else {
+        const productos = [];
 
-    for (const tarjeta of tarjetas) {
-        // El nombre lo tomamos del título visible de la tarjeta
-        const nombre = tarjeta.querySelector(".product-title").textContent;
+        for (const tarjeta of tarjetas) {
+            const elementoTitulo = tarjeta.querySelector(".product-title");
+            const nombre = elementoTitulo !== null ? elementoTitulo.textContent : "";
 
-        const producto = {
-            nombre: nombre,
-            categoria: tarjeta.dataset.categoria,
-            coleccion: tarjeta.dataset.coleccion,
-            // dataset siempre devuelve texto, por eso lo convertimos a número
-            precio: Number(tarjeta.dataset.precio),
-            badge: tarjeta.dataset.badge
-        };
+            const producto = {
+                nombre: nombre,
+                categoria: tarjeta.dataset.categoria,
+                coleccion: tarjeta.dataset.coleccion,
+                precio: Number(tarjeta.dataset.precio),
+                badge: tarjeta.dataset.badge
+            };
 
-        productos.push(producto);
+            productos.push(producto);
+        }
+
+        console.table(productos);
     }
-
-    // Mostramos todos los productos en forma de tabla en la consola
-    console.table(productos);
 
     /*
      * ============================================================
-     *  BUSCADOR EN TIEMPO REAL Y SISTEMA DE FILTROS
+     *  3. BUSCADOR EN TIEMPO REAL Y SISTEMA DE FILTROS
      * ============================================================
-     *  Tanto el buscador del header como el formulario de filtros
-     *  conviven en una misma función filtrarProductos(), para que
-     *  al escribir o al aplicar/limpiar filtros se respeten ambas
-     *  condiciones al mismo tiempo.
+     *  Página donde actúa: index.html (data-pagina="index").
+     *  Qué hace:
+     *   - Agrega un <span> al lado del range que muestra "Hasta $X USD"
+     *     actualizado en vivo con el evento "input".
+     *   - Agrega el contador "Mostrando X de 7 productos" arriba del grid.
+     *   - Agrega el botón "Limpiar filtros".
+     *   - Filtra las tarjetas combinando buscador + checkboxes (map)
+     *     + select + range con &&. Si no hay resultados, crea un
+     *     mensaje con createElement y lo quita con remove().
+     *   - En celular ubica el buscador al lado del menú hamburguesa.
      * ============================================================
      */
     const formBusqueda = document.querySelector(".nav-search-bar");
     const inputBusqueda = document.querySelector(".nav-search-input");
     const seccionCatalogo = document.querySelector(".catalog");
     const grillaProductos = document.querySelector(".product-grid");
-
     const formFiltros = document.querySelector(".filter-form");
     const dropdownFiltros = document.querySelector(".nav-filter-dropdown");
     const checkboxesCategoria = document.querySelectorAll('input[name="categoria"]');
     const selectColeccion = document.querySelector(".filter-select");
     const inputPrecioMax = document.querySelector('input[name="precio_max"]');
     const grupoRange = document.querySelector(".range-group");
-
-    // 1) Span al lado del range "Precio máximo" que muestra "Hasta $X USD" en vivo
-    const spanPrecio = document.createElement("span");
-    spanPrecio.classList.add("range-value");
-    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
-    grupoRange.appendChild(spanPrecio);
-
-    inputPrecioMax.addEventListener("input", () => {
-        spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
-    });
-
-    // 3) Contador arriba del grid: "Mostrando X de 7 productos"
-    const totalProductos = tarjetas.length;
-    const contadorProductos = document.createElement("p");
-    contadorProductos.textContent = `Mostrando ${totalProductos} de ${totalProductos} productos`;
-    seccionCatalogo.insertBefore(contadorProductos, grillaProductos);
-
-    // 4) Botón "Limpiar filtros" dentro del formulario de filtros
-    const btnLimpiar = document.createElement("button");
-    btnLimpiar.type = "button";
-    btnLimpiar.classList.add("btn-apply");
-    btnLimpiar.textContent = "Limpiar filtros";
-    formFiltros.appendChild(btnLimpiar);
-
-    // Variable para guardar la referencia al mensaje de "sin resultados"
-    let mensajeSinResultados = null;
-
-    // Función que evalúa el buscador + los filtros activos al mismo tiempo
-    const filtrarProductos = () => {
-        // Texto del buscador limpio y en minúsculas
-        const textoBuscado = inputBusqueda.value.trim().toLowerCase();
-
-        // Obtenemos los checkboxes marcados y usamos map() para quedarnos con sus value
-        const checksMarcados = document.querySelectorAll('input[name="categoria"]:checked');
-        const categoriasSeleccionadas = Array.from(checksMarcados).map((checkbox) => checkbox.value);
-
-        // Leemos el select de colección y el range de precio máximo
-        const coleccionSeleccionada = selectColeccion.value;
-        const precioMaximo = Number(inputPrecioMax.value);
-
-        // Contador para saber cuántas tarjetas quedaron visibles
-        let resultadosVisibles = 0;
-
-        for (const tarjeta of tarjetas) {
-            const titulo = tarjeta.querySelector(".product-title").textContent.toLowerCase();
-            const categoriaTarjeta = tarjeta.dataset.categoria;
-            const coleccionTarjeta = tarjeta.dataset.coleccion;
-            const precioTarjeta = Number(tarjeta.dataset.precio);
-
-            // Condición 1: coincide con el texto del buscador
-            const coincideBusqueda = titulo.includes(textoBuscado);
-
-            // Condición 2: si no hay categorías marcadas se muestran todas; si hay, debe estar incluida
-            const coincideCategoria = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaTarjeta);
-
-            // Condición 3: si el select está en "" (todas) o coincide con la colección de la tarjeta
-            const coincideColeccion = coleccionSeleccionada === "" || coleccionTarjeta === coleccionSeleccionada;
-
-            // Condición 4: el precio de la tarjeta es menor o igual al máximo elegido
-            const coincidePrecio = precioTarjeta <= precioMaximo;
-
-            // Combinamos todas las condiciones con &&
-            if (coincideBusqueda && coincideCategoria && coincideColeccion && coincidePrecio) {
-                tarjeta.classList.remove("oculto");
-                resultadosVisibles = resultadosVisibles + 1;
-            } else {
-                tarjeta.classList.add("oculto");
-            }
-        }
-
-        // Actualizamos el texto del contador arriba del grid
-        contadorProductos.textContent = `Mostrando ${resultadosVisibles} de ${totalProductos} productos`;
-
-        // Si no quedó ninguna tarjeta visible, mostramos el mensaje debajo del grid
-        if (resultadosVisibles === 0) {
-            if (mensajeSinResultados === null) {
-                mensajeSinResultados = document.createElement("p");
-                seccionCatalogo.appendChild(mensajeSinResultados);
-            }
-            mensajeSinResultados.textContent = `No encontramos productos para: ${inputBusqueda.value.trim()}`;
-        } else {
-            // Si volvió a haber resultados y el mensaje estaba en pantalla, lo quitamos
-            if (mensajeSinResultados !== null) {
-                mensajeSinResultados.remove();
-                mensajeSinResultados = null;
-            }
-        }
-    };
-
     const headerPagina = document.querySelector(".page-header");
 
-    // Función que lleva la pantalla al inicio de "Catálogo de Productos"
-    // restando la altura del header sticky para que no tape el título
-    const irACatalogo = () => {
-        const alturaHeader = headerPagina.offsetHeight;
-        const posicionCatalogo = seccionCatalogo.offsetTop - alturaHeader - 15;
-        window.scrollTo({ top: posicionCatalogo, behavior: "smooth" });
-    };
-
-    // Cancelamos el envío del formulario de búsqueda y llevamos la vista a los productos
-    formBusqueda.addEventListener("submit", (e) => {
-        e.preventDefault();
-        irACatalogo();
-        inputBusqueda.blur();
-    });
-
-    // Escuchamos cada vez que el usuario escribe o borra en el buscador
-    inputBusqueda.addEventListener("input", () => {
-        filtrarProductos();
-
-        // En celular, acomodamos la vista en la sección de productos mientras busca
-        if (window.innerWidth <= 768 && inputBusqueda.value.trim() !== "") {
-            irACatalogo();
-        }
-    });
-
-    // En celular (<= 768px), ubicamos la barra de búsqueda afuera, al lado del botón hamburguesa
-    const barraMobile = document.querySelector(".mobile-menu-bar");
-    const btnCarritoMobile = document.querySelector(".mobile-cart-btn");
-    const listaAccionesNav = document.querySelector(".nav-actions-list");
-
-    const ubicarBuscadorSegunPantalla = () => {
-        if (window.innerWidth <= 768) {
-            // Lo ponemos dentro de .mobile-menu-bar entre el botón hamburguesa y el carrito
-            if (formBusqueda.parentElement !== barraMobile) {
-                barraMobile.insertBefore(formBusqueda, btnCarritoMobile);
-            }
-        } else {
-            // En escritorio vuelve a su lugar original dentro del <nav>
-            if (formBusqueda.parentElement !== listaAccionesNav.parentElement) {
-                listaAccionesNav.before(formBusqueda);
-            }
-        }
-    };
-
-    ubicarBuscadorSegunPantalla();
-    window.addEventListener("resize", ubicarBuscadorSegunPantalla);
-
-    // 2) Al enviar el formulario de filtros, cancelamos el submit, filtramos y cerramos el menú
-    formFiltros.addEventListener("submit", (e) => {
-        e.preventDefault();
-        filtrarProductos();
-        dropdownFiltros.open = false;
-        irACatalogo();
-    });
-
-    // Evento del botón "Limpiar filtros": resetea los controles, muestra todo y cierra el menú
-    btnLimpiar.addEventListener("click", () => {
-        for (const checkbox of checkboxesCategoria) {
-            checkbox.checked = false;
-        }
-        selectColeccion.value = "";
-        inputPrecioMax.value = 500;
+    if (
+        formBusqueda === null ||
+        inputBusqueda === null ||
+        seccionCatalogo === null ||
+        grillaProductos === null ||
+        formFiltros === null ||
+        dropdownFiltros === null ||
+        selectColeccion === null ||
+        inputPrecioMax === null ||
+        grupoRange === null ||
+        headerPagina === null
+    ) {
+        console.warn("Faltan elementos del buscador o del formulario de filtros en index.html.");
+    } else {
+        // 1) Span al lado del range "Precio máximo" que muestra "Hasta $X USD" en vivo
+        const spanPrecio = document.createElement("span");
+        spanPrecio.classList.add("range-value");
         spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+        grupoRange.appendChild(spanPrecio);
 
-        // También limpiamos el buscador para mostrar todos los productos
-        inputBusqueda.value = "";
+        inputPrecioMax.addEventListener("input", () => {
+            spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+        });
 
-        filtrarProductos();
-        dropdownFiltros.open = false;
-        irACatalogo();
-    });
+        // 3) Contador arriba del grid: "Mostrando X de 7 productos"
+        const totalProductos = tarjetas.length;
+        const contadorProductos = document.createElement("p");
+        contadorProductos.textContent = `Mostrando ${totalProductos} de ${totalProductos} productos`;
+        seccionCatalogo.insertBefore(contadorProductos, grillaProductos);
 
-    /*
-     * ============================================================
-     *  ENLACES DEL MENÚ DE NAVEGACIÓN (Ofertas, Colecciones, etc.)
-     * ============================================================
-     *  Escuchamos el click en los links que tienen data-accion:
-     *   - "ofertas": muestra solo las tarjetas con data-badge="oferta".
-     *   - "colecciones": abre el desplegable de filtros con setAttribute("open", "").
-     *   - "inicio" / "catalogo": limpian los filtros y vuelven a mostrar todo.
-     *  Usamos un switch evaluando link.dataset.accion.
-     * ============================================================
-     */
-    const linksMenu = document.querySelectorAll(".nav-list a[data-accion]");
+        // 4) Botón "Limpiar filtros" dentro del formulario de filtros
+        const btnLimpiar = document.createElement("button");
+        btnLimpiar.type = "button";
+        btnLimpiar.classList.add("btn-apply");
+        btnLimpiar.textContent = "Limpiar filtros";
+        formFiltros.appendChild(btnLimpiar);
 
-    for (const link of linksMenu) {
-        link.addEventListener("click", (e) => {
-            const accion = link.dataset.accion;
+        // Variable para guardar la referencia al mensaje de "sin resultados"
+        let mensajeSinResultados = null;
 
-            switch (accion) {
-                case "ofertas": {
-                    e.preventDefault();
-                    let ofertasVisibles = 0;
+        // Función que lleva la pantalla al inicio de "Catálogo de Productos"
+        // restando la altura del header sticky para que no tape el título
+        const irACatalogo = () => {
+            const alturaHeader = headerPagina.offsetHeight;
+            const posicionCatalogo = seccionCatalogo.offsetTop - alturaHeader - 15;
+            window.scrollTo({ top: posicionCatalogo, behavior: "smooth" });
+        };
 
-                    for (const tarjeta of tarjetas) {
-                        if (tarjeta.dataset.badge === "oferta") {
-                            tarjeta.classList.remove("oculto");
-                            ofertasVisibles = ofertasVisibles + 1;
-                        } else {
-                            tarjeta.classList.add("oculto");
-                        }
-                    }
+        // Función que evalúa el buscador + los filtros activos al mismo tiempo
+        const filtrarProductos = () => {
+            const textoBuscado = inputBusqueda.value.trim().toLowerCase();
 
-                    // Actualizamos el contador arriba del grid
-                    contadorProductos.textContent = `Mostrando ${ofertasVisibles} de ${totalProductos} productos`;
+            // Obtenemos los checkboxes marcados y usamos map() para quedarnos con sus value
+            const checksMarcados = document.querySelectorAll('input[name="categoria"]:checked');
+            const categoriasSeleccionadas = Array.from(checksMarcados).map((checkbox) => checkbox.value);
 
-                    // Si había un mensaje de "sin resultados" previo, lo quitamos
-                    if (mensajeSinResultados !== null) {
-                        mensajeSinResultados.remove();
-                        mensajeSinResultados = null;
-                    }
-                    irACatalogo();
-                    break;
+            // Leemos el select de colección y el range de precio máximo
+            const coleccionSeleccionada = selectColeccion.value;
+            const precioMaximo = Number(inputPrecioMax.value);
+
+            let resultadosVisibles = 0;
+
+            for (const tarjeta of tarjetas) {
+                const titulo = tarjeta.querySelector(".product-title").textContent.toLowerCase();
+                const categoriaTarjeta = tarjeta.dataset.categoria;
+                const coleccionTarjeta = tarjeta.dataset.coleccion;
+                const precioTarjeta = Number(tarjeta.dataset.precio);
+
+                const coincideBusqueda = titulo.includes(textoBuscado);
+                const coincideCategoria = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaTarjeta);
+                const coincideColeccion = coleccionSeleccionada === "" || coleccionTarjeta === coleccionSeleccionada;
+                const coincidePrecio = precioTarjeta <= precioMaximo;
+
+                // Combinamos todas las condiciones con &&
+                if (coincideBusqueda && coincideCategoria && coincideColeccion && coincidePrecio) {
+                    tarjeta.classList.remove("oculto");
+                    resultadosVisibles = resultadosVisibles + 1;
+                } else {
+                    tarjeta.classList.add("oculto");
                 }
+            }
 
-                case "colecciones": {
-                    e.preventDefault();
-                    // Abrimos el desplegable de filtros
-                    dropdownFiltros.setAttribute("open", "");
-                    break;
+            // Actualizamos el texto del contador arriba del grid
+            contadorProductos.textContent = `Mostrando ${resultadosVisibles} de ${totalProductos} productos`;
+
+            // Si no quedó ninguna tarjeta visible, mostramos el mensaje debajo del grid
+            if (resultadosVisibles === 0) {
+                if (mensajeSinResultados === null) {
+                    mensajeSinResultados = document.createElement("p");
+                    seccionCatalogo.appendChild(mensajeSinResultados);
                 }
-
-                case "inicio": {
-                    e.preventDefault();
-                    for (const checkbox of checkboxesCategoria) {
-                        checkbox.checked = false;
-                    }
-                    selectColeccion.value = "";
-                    inputPrecioMax.value = 500;
-                    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
-                    inputBusqueda.value = "";
-
-                    filtrarProductos();
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                    break;
+                mensajeSinResultados.textContent = `No encontramos productos para: ${inputBusqueda.value.trim()}`;
+            } else {
+                if (mensajeSinResultados !== null) {
+                    mensajeSinResultados.remove();
+                    mensajeSinResultados = null;
                 }
+            }
+        };
 
-                case "catalogo": {
-                    e.preventDefault();
-                    // Reseteamos todos los filtros y el buscador para volver a mostrar todo
-                    for (const checkbox of checkboxesCategoria) {
-                        checkbox.checked = false;
-                    }
-                    selectColeccion.value = "";
-                    inputPrecioMax.value = 500;
-                    spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
-                    inputBusqueda.value = "";
+        // Función reutilizable que vuelve todos los controles a su estado inicial
+        // (checkboxes destildados, colección "Todas", precio en 500 y buscador vacío)
+        // y vuelve a filtrar para mostrar todos los productos.
+        // La usan: el botón "Limpiar filtros" y los links Inicio, Catálogo y Ofertas.
+        const limpiarFiltros = () => {
+            for (const checkbox of checkboxesCategoria) {
+                checkbox.checked = false;
+            }
+            selectColeccion.value = "";
+            inputPrecioMax.value = 500;
+            spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+            inputBusqueda.value = "";
 
-                    filtrarProductos();
-                    irACatalogo();
-                    break;
-                }
+            filtrarProductos();
+        };
+
+        // Cancelamos el envío del formulario de búsqueda y llevamos la vista a los productos
+        formBusqueda.addEventListener("submit", (e) => {
+            e.preventDefault();
+            irACatalogo();
+            inputBusqueda.blur();
+        });
+
+        // Escuchamos cada vez que el usuario escribe o borra en el buscador
+        inputBusqueda.addEventListener("input", () => {
+            filtrarProductos();
+
+            if (window.innerWidth <= 768 && inputBusqueda.value.trim() !== "") {
+                irACatalogo();
             }
         });
+
+        // En celular (<= 768px), ubicamos la barra de búsqueda afuera, al lado del botón hamburguesa
+        const barraMobile = document.querySelector(".mobile-menu-bar");
+        const btnCarritoMobile = document.querySelector(".mobile-cart-btn");
+        const listaAccionesNav = document.querySelector(".nav-actions-list");
+
+        if (barraMobile !== null && btnCarritoMobile !== null && listaAccionesNav !== null) {
+            const ubicarBuscadorSegunPantalla = () => {
+                if (window.innerWidth <= 768) {
+                    if (formBusqueda.parentElement !== barraMobile) {
+                        barraMobile.insertBefore(formBusqueda, btnCarritoMobile);
+                    }
+                } else {
+                    if (formBusqueda.parentElement !== listaAccionesNav.parentElement) {
+                        listaAccionesNav.before(formBusqueda);
+                    }
+                }
+            };
+
+            ubicarBuscadorSegunPantalla();
+            window.addEventListener("resize", ubicarBuscadorSegunPantalla);
+        }
+
+        // 2) Al enviar el formulario de filtros, cancelamos el submit, filtramos y cerramos el menú
+        formFiltros.addEventListener("submit", (e) => {
+            e.preventDefault();
+            filtrarProductos();
+            dropdownFiltros.open = false;
+            irACatalogo();
+        });
+
+        // Evento del botón "Limpiar filtros": resetea los controles, muestra todo y cierra el menú
+        btnLimpiar.addEventListener("click", () => {
+            limpiarFiltros();
+            dropdownFiltros.open = false;
+            irACatalogo();
+        });
+
+        /*
+         * ============================================================
+         *  4. ENLACES DEL MENÚ DE NAVEGACIÓN (Ofertas, Colecciones)
+         * ============================================================
+         *  Página donde actúa: index.html (data-pagina="index").
+         *  Qué hace: Escucha el click en los links con data-accion y
+         *  usa un switch sobre link.dataset.accion:
+         *   - "ofertas": muestra solo las tarjetas con data-badge="oferta".
+         *   - "colecciones": abre el desplegable de filtros con setAttribute("open", "").
+         *   - "inicio" / "catalogo": limpian los filtros y vuelven a mostrar todo.
+         * ============================================================
+         */
+        const linksMenu = document.querySelectorAll(".nav-list a[data-accion]");
+
+        if (linksMenu.length === 0) {
+            console.warn("No se encontraron enlaces con data-accion en el menú de index.html.");
+        } else {
+            for (const link of linksMenu) {
+                link.addEventListener("click", (e) => {
+                    const accion = link.dataset.accion;
+
+                    switch (accion) {
+                        case "ofertas": {
+                            e.preventDefault();
+
+                            // Primero limpiamos filtros y buscador para que no quede texto viejo
+                            limpiarFiltros();
+
+                            let ofertasVisibles = 0;
+
+                            for (const tarjeta of tarjetas) {
+                                if (tarjeta.dataset.badge === "oferta") {
+                                    tarjeta.classList.remove("oculto");
+                                    ofertasVisibles = ofertasVisibles + 1;
+                                } else {
+                                    tarjeta.classList.add("oculto");
+                                }
+                            }
+
+                            contadorProductos.textContent = `Mostrando ${ofertasVisibles} de ${totalProductos} productos`;
+                            irACatalogo();
+                            break;
+                        }
+
+                        case "colecciones": {
+                            e.preventDefault();
+                            dropdownFiltros.setAttribute("open", "");
+                            break;
+                        }
+
+                        case "inicio": {
+                            e.preventDefault();
+                            limpiarFiltros();
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                            break;
+                        }
+
+                        case "catalogo": {
+                            e.preventDefault();
+                            limpiarFiltros();
+                            irACatalogo();
+                            break;
+                        }
+                    }
+                });
+            }
+        }
     }
 }
 
 /*
  * ============================================================
- *  CARRITO DE COMPRAS INTERACTIVO (cart.html)
+ *  5. CARRITO DE COMPRAS INTERACTIVO (cart.html)
  * ============================================================
- *  - Inserta en cada .cart-item los botones "−", "+" y "Eliminar"
- *    usando createElement y append.
- *  - Usa UN solo addEventListener "click" en .cart-items (delegación)
- *    detectando el botón con e.target.matches() y el item con closest().
- *  - Cantidad entre 1 y 20 (if/else).
- *  - calcularResumen() usa reduce() con valor inicial 0 para sumar
- *    la cantidad de artículos y el subtotal, y un operador ternario
- *    para el envío (0 si subtotal >= 150, 15 si no).
+ *  Página donde actúa: cart.html (data-pagina="cart").
+ *  Qué hace:
+ *   - Inserta en cada .cart-item los botones "−", "+" y "Eliminar"
+ *     usando createElement y append.
+ *   - Usa UN solo addEventListener "click" en .cart-items (delegación)
+ *     detectando el botón con e.target.matches() y el item con closest().
+ *   - Mantiene la cantidad entre 1 y 20 con if/else.
+ *   - calcularResumen() usa reduce() con valor inicial 0 para sumar
+ *     artículos y subtotal, y un operador ternario para el envío
+ *     (0 si subtotal >= 150, 15 si no).
+ *   - Al hacer click en "Pagar Ahora" reemplaza .cart-summary con
+ *     innerHTML mostrando el total abonado, o console.warn si está vacío.
  * ============================================================
  */
 if (paginaActual === "cart") {
@@ -361,267 +379,274 @@ if (paginaActual === "cart") {
     const filasResumen = document.querySelectorAll(".cart-summary .summary-row");
     const btnPagar = document.querySelector(".checkout-btn");
 
-    // Referencias a los elementos del Resumen de Compra
-    const labelSubtotal = filasResumen[0].querySelector(".summary-label");
-    const valorSubtotal = filasResumen[0].querySelector(".summary-value");
-    const valorEnvio = filasResumen[1].querySelector(".summary-value");
-    const valorTotalFinal = filasResumen[2].querySelector(".summary-value");
+    if (
+        contenedorItems === null ||
+        contenedorResumen === null ||
+        filasResumen.length < 3 ||
+        btnPagar === null
+    ) {
+        console.warn("Faltan elementos esperados del carrito en cart.html.");
+    } else {
+        const labelSubtotal = filasResumen[0].querySelector(".summary-label");
+        const valorSubtotal = filasResumen[0].querySelector(".summary-value");
+        const valorEnvio = filasResumen[1].querySelector(".summary-value");
+        const valorTotalFinal = filasResumen[2].querySelector(".summary-value");
 
-    // Variable para guardar el total final actual y usarlo al pagar
-    let totalFinalActual = 0;
+        let totalFinalActual = 0;
 
-    // Insertamos en cada .cart-item los botones "−", "+" y "Eliminar"
-    for (const item of itemsIniciales) {
-        const infoItem = item.querySelector(".cart-item-info");
+        // Insertamos en cada .cart-item los botones "−", "+" y "Eliminar"
+        for (const item of itemsIniciales) {
+            const infoItem = item.querySelector(".cart-item-info");
 
-        const contenedorControles = document.createElement("div");
-        contenedorControles.classList.add("cart-item-controls");
+            if (infoItem !== null) {
+                const contenedorControles = document.createElement("div");
+                contenedorControles.classList.add("cart-item-controls");
 
-        const btnRestar = document.createElement("button");
-        btnRestar.type = "button";
-        btnRestar.classList.add("btn-qty", "btn-restar");
-        btnRestar.textContent = "−";
+                const btnRestar = document.createElement("button");
+                btnRestar.type = "button";
+                btnRestar.classList.add("btn-qty", "btn-restar");
+                btnRestar.textContent = "−";
 
-        const btnSumar = document.createElement("button");
-        btnSumar.type = "button";
-        btnSumar.classList.add("btn-qty", "btn-sumar");
-        btnSumar.textContent = "+";
+                const btnSumar = document.createElement("button");
+                btnSumar.type = "button";
+                btnSumar.classList.add("btn-qty", "btn-sumar");
+                btnSumar.textContent = "+";
 
-        const btnEliminar = document.createElement("button");
-        btnEliminar.type = "button";
-        btnEliminar.classList.add("btn-remove-item");
-        btnEliminar.textContent = "Eliminar";
+                const btnEliminar = document.createElement("button");
+                btnEliminar.type = "button";
+                btnEliminar.classList.add("btn-remove-item");
+                btnEliminar.textContent = "Eliminar";
 
-        contenedorControles.append(btnRestar, btnSumar, btnEliminar);
-        infoItem.append(contenedorControles);
-    }
+                contenedorControles.append(btnRestar, btnSumar, btnEliminar);
+                infoItem.append(contenedorControles);
+            }
+        }
 
-    // Arrow function que recalcula el resumen del carrito con reduce()
-    const calcularResumen = () => {
-        const itemsActuales = Array.from(document.querySelectorAll(".cart-item"));
+        // Arrow function que recalcula el resumen del carrito con reduce()
+        const calcularResumen = () => {
+            const itemsActuales = Array.from(document.querySelectorAll(".cart-item"));
 
-        // Calculamos la cantidad total de artículos con reduce (valor inicial 0)
-        const totalArticulos = itemsActuales.reduce((acumulador, item) => {
-            return acumulador + Number(item.dataset.cantidad);
-        }, 0);
+            // Calculamos la cantidad total de artículos con reduce (valor inicial 0)
+            const totalArticulos = itemsActuales.reduce((acumulador, item) => {
+                return acumulador + Number(item.dataset.cantidad);
+            }, 0);
 
-        // Calculamos el subtotal sumando precio * cantidad de cada item (valor inicial 0)
-        const subtotal = itemsActuales.reduce((acumulador, item) => {
+            // Calculamos el subtotal sumando precio * cantidad de cada item (valor inicial 0)
+            const subtotal = itemsActuales.reduce((acumulador, item) => {
+                const precio = Number(item.dataset.precio);
+                const cantidad = Number(item.dataset.cantidad);
+                return acumulador + (precio * cantidad);
+            }, 0);
+
+            // Si el carrito quedó vacío, vaciamos .cart-items, mostramos el mensaje y deshabilitamos el botón
+            if (itemsActuales.length === 0) {
+                contenedorItems.innerHTML = "";
+
+                const bloqueVacio = document.createElement("div");
+                bloqueVacio.classList.add("cart-empty-msg");
+
+                const textoVacio = document.createElement("p");
+                textoVacio.textContent = "Tu carrito está vacío";
+
+                const linkCatalogo = document.createElement("a");
+                linkCatalogo.href = "index.html";
+                linkCatalogo.classList.add("cart-empty-link");
+                linkCatalogo.textContent = "Volver al catálogo";
+
+                bloqueVacio.append(textoVacio, linkCatalogo);
+                contenedorItems.append(bloqueVacio);
+
+                totalFinalActual = 0;
+                labelSubtotal.textContent = "Subtotal (0 artículos)";
+                valorSubtotal.textContent = "$0 USD";
+                valorEnvio.textContent = "$0 USD";
+                valorTotalFinal.textContent = "$0 USD";
+                btnPagar.setAttribute("disabled", "");
+                return;
+            }
+
+            // El envío es 0 si el subtotal es >= 150 y 15 si no (operador ternario)
+            const costoEnvio = subtotal >= 150 ? 0 : 15;
+            const totalFinal = subtotal + costoEnvio;
+            totalFinalActual = totalFinal;
+
+            labelSubtotal.textContent = `Subtotal (${totalArticulos} artículos)`;
+            valorSubtotal.textContent = `$${subtotal} USD`;
+            valorEnvio.textContent = costoEnvio === 0 ? "GRATIS" : `$${costoEnvio} USD`;
+            valorTotalFinal.textContent = `$${totalFinal} USD`;
+        };
+
+        // Arrow function reutilizable que actualiza un item del carrito con una nueva cantidad.
+        // Mantiene la cantidad entre 1 y 20 (if/else), guarda el valor en el dataset,
+        // actualiza los textos "Cantidad: N" y el total del item, y recalcula el resumen.
+        const actualizarItem = (item, cantidad) => {
+            let cantidadFinal = cantidad;
+
+            if (cantidadFinal < 1) {
+                cantidadFinal = 1;
+            } else if (cantidadFinal > 20) {
+                cantidadFinal = 20;
+            }
+
             const precio = Number(item.dataset.precio);
+
+            item.dataset.cantidad = cantidadFinal;
+            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidadFinal}`;
+            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidadFinal} USD`;
+            calcularResumen();
+        };
+
+        // UN solo addEventListener "click" en .cart-items (delegación de eventos)
+        contenedorItems.addEventListener("click", (e) => {
+            const item = e.target.closest(".cart-item");
+            if (item === null) {
+                return;
+            }
+
             const cantidad = Number(item.dataset.cantidad);
-            return acumulador + (precio * cantidad);
-        }, 0);
 
-        // Si el carrito quedó vacío, mostramos el mensaje, vaciamos .cart-items y deshabilitamos el botón
-        if (itemsActuales.length === 0) {
-            contenedorItems.innerHTML = "";
+            if (e.target.matches(".btn-restar")) {
+                // Restamos 1 (actualizarItem se encarga de no bajar de 1)
+                actualizarItem(item, cantidad - 1);
+            } else if (e.target.matches(".btn-sumar")) {
+                // Sumamos 1 (actualizarItem se encarga de no pasar de 20)
+                actualizarItem(item, cantidad + 1);
+            } else if (e.target.matches(".btn-remove-item")) {
+                item.remove();
+                calcularResumen();
+            }
+        });
 
-            const bloqueVacio = document.createElement("div");
-            bloqueVacio.classList.add("cart-empty-msg");
+        // Evento click en "Pagar Ahora"
+        btnPagar.addEventListener("click", () => {
+            const itemsActuales = document.querySelectorAll(".cart-item");
 
-            const textoVacio = document.createElement("p");
-            textoVacio.textContent = "Tu carrito está vacío";
-
-            const linkCatalogo = document.createElement("a");
-            linkCatalogo.href = "index.html";
-            linkCatalogo.classList.add("cart-empty-link");
-            linkCatalogo.textContent = "Volver al catálogo";
-
-            bloqueVacio.append(textoVacio, linkCatalogo);
-            contenedorItems.append(bloqueVacio);
-
-            // Actualizamos el resumen en 0 y deshabilitamos "Pagar Ahora"
-            totalFinalActual = 0;
-            labelSubtotal.textContent = "Subtotal (0 artículos)";
-            valorSubtotal.textContent = "$0 USD";
-            valorEnvio.textContent = "$0 USD";
-            valorTotalFinal.textContent = "$0 USD";
-            btnPagar.setAttribute("disabled", "");
-            return;
-        }
-
-        // El envío es 0 si el subtotal es >= 150 y 15 si no (operador ternario)
-        const costoEnvio = subtotal >= 150 ? 0 : 15;
-        const totalFinal = subtotal + costoEnvio;
-        totalFinalActual = totalFinal;
-
-        // Actualizamos los textos del resumen todo en enteros
-        labelSubtotal.textContent = `Subtotal (${totalArticulos} artículos)`;
-        valorSubtotal.textContent = `$${subtotal} USD`;
-        valorEnvio.textContent = costoEnvio === 0 ? "GRATIS" : `$${costoEnvio} USD`;
-        valorTotalFinal.textContent = `$${totalFinal} USD`;
-    };
-
-    // UN solo addEventListener "click" en .cart-items (delegación de eventos)
-    contenedorItems.addEventListener("click", (e) => {
-        // Buscamos a qué .cart-item pertenece el botón clickeado
-        const item = e.target.closest(".cart-item");
-        if (item === null) {
-            return;
-        }
-
-        const precio = Number(item.dataset.precio);
-        let cantidad = Number(item.dataset.cantidad);
-
-        // Detectamos qué botón se tocó usando e.target.matches()
-        if (e.target.matches(".btn-restar")) {
-            // Cantidad mínima 1
-            if (cantidad > 1) {
-                cantidad = cantidad - 1;
-            } else {
-                cantidad = 1;
+            if (itemsActuales.length === 0) {
+                console.warn("No se puede realizar el pago: el carrito está vacío.");
+                return;
             }
 
-            item.dataset.cantidad = cantidad;
-            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidad}`;
-            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidad} USD`;
-            calcularResumen();
-        } else if (e.target.matches(".btn-sumar")) {
-            // Cantidad máxima 20
-            if (cantidad < 20) {
-                cantidad = cantidad + 1;
-            } else {
-                cantidad = 20;
-            }
+            contenedorResumen.innerHTML = `
+                <h2 class="summary-title">¡Compra Confirmada!</h2>
+                <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalFinalActual} USD</p>
+                <a href="index.html" class="continue-shopping">Volver al inicio</a>
+            `;
+        });
 
-            item.dataset.cantidad = cantidad;
-            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidad}`;
-            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidad} USD`;
-            calcularResumen();
-        } else if (e.target.matches(".btn-remove-item")) {
-            // Quitamos el item del DOM y recalculamos el resumen
-            item.remove();
-            calcularResumen();
-        }
-    });
-
-    // Evento click en "Pagar Ahora"
-    btnPagar.addEventListener("click", () => {
-        const itemsActuales = document.querySelectorAll(".cart-item");
-
-        // Si el carrito está vacío, mostramos un console.warn y no hacemos nada
-        if (itemsActuales.length === 0) {
-            console.warn("No se puede realizar el pago: el carrito está vacío.");
-            return;
-        }
-
-        // Reemplazamos el contenido de .cart-summary con innerHTML y template literal
-        contenedorResumen.innerHTML = `
-            <h2 class="summary-title">¡Compra Confirmada!</h2>
-            <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalFinalActual} USD</p>
-            <a href="index.html" class="continue-shopping">Volver al inicio</a>
-        `;
-    });
-
-    // Ejecutamos calcularResumen() al cargar la página para sincronizar los valores iniciales
-    calcularResumen();
+        // Ejecutamos calcularResumen() al cargar la página
+        calcularResumen();
+    }
 }
 
 /*
  * ============================================================
- *  DETALLE DE PRODUCTO (las 7 páginas producto-*.html)
+ *  6. DETALLE DE PRODUCTO (las 7 páginas producto-*.html)
  * ============================================================
- *  Un solo bloque para todas las páginas con data-pagina="producto":
+ *  Páginas donde actúa: producto-*.html (data-pagina="producto").
+ *  Qué hace:
  *   - Lee el precio desde data-precio del span .price con Number().
  *   - Muestra debajo del input cantidad "Total: $X USD" y lo actualiza
  *     con el evento "input" (corrigiendo entre 1 y 20 con if/else).
- *   - Al enviar "Añadir al Carrito", cancela el submit con preventDefault
- *     y muestra con createElement + after() el mensaje
- *     "✔ Agregaste N × NOMBRE" con un link "Ir al carrito", reemplazando
- *     el mensaje anterior si se vuelve a agregar.
+ *   - Al enviar "Añadir al Carrito", hace preventDefault y muestra con
+ *     createElement + after() el mensaje "✔ Agregaste N × NOMBRE" con
+ *     un link "Ir al carrito", reemplazando el anterior si se repite.
  * ============================================================
  */
 if (paginaActual === "producto") {
-    const tituloProducto = document.querySelector(".detail-title").textContent;
+    const elementoTituloProducto = document.querySelector(".detail-title");
     const spanPrecioUnitario = document.querySelector(".price");
-    const precioUnitario = Number(spanPrecioUnitario.dataset.precio);
-
     const formAgregar = document.querySelector(".add-to-cart-form");
     const selectorCantidad = document.querySelector(".quantity-selector");
     const inputCantidad = document.querySelector("#cantidad");
 
-    // Creamos el texto "Total: $X USD" y lo ubicamos debajo del selector de cantidad
-    const textoTotal = document.createElement("p");
-    textoTotal.classList.add("detail-total-preview");
-    textoTotal.textContent = `Total: $${precioUnitario * Number(inputCantidad.value)} USD`;
-    selectorCantidad.after(textoTotal);
+    if (
+        elementoTituloProducto === null ||
+        spanPrecioUnitario === null ||
+        formAgregar === null ||
+        selectorCantidad === null ||
+        inputCantidad === null
+    ) {
+        console.warn("Faltan elementos esperados en la página de detalle de producto.");
+    } else {
+        const tituloProducto = elementoTituloProducto.textContent;
+        const precioUnitario = Number(spanPrecioUnitario.dataset.precio);
 
-    // Variable para guardar la referencia al mensaje de confirmación y no duplicarlo
-    let mensajeAgregado = null;
+        // Creamos el texto "Total: $X USD" y lo ubicamos debajo del selector de cantidad
+        const textoTotal = document.createElement("p");
+        textoTotal.classList.add("detail-total-preview");
+        textoTotal.textContent = `Total: $${precioUnitario * Number(inputCantidad.value)} USD`;
+        selectorCantidad.after(textoTotal);
 
-    // Función que valida el rango (1 a 20) con if/else y actualiza el total
-    const actualizarTotalProducto = () => {
-        let cantidad = Number(inputCantidad.value);
+        let mensajeAgregado = null;
 
-        if (cantidad < 1) {
-            cantidad = 1;
-            inputCantidad.value = 1;
-        } else if (cantidad > 20) {
-            cantidad = 20;
-            inputCantidad.value = 20;
-        }
+        // Función que valida el rango (1 a 20) con if/else y actualiza el total
+        const actualizarTotalProducto = () => {
+            let cantidad = Number(inputCantidad.value);
 
-        textoTotal.textContent = `Total: $${precioUnitario * cantidad} USD`;
-    };
+            if (cantidad < 1) {
+                cantidad = 1;
+                inputCantidad.value = 1;
+            } else if (cantidad > 20) {
+                cantidad = 20;
+                inputCantidad.value = 20;
+            }
 
-    // Actualizamos el total en vivo cada vez que cambia el input
-    inputCantidad.addEventListener("input", () => {
-        actualizarTotalProducto();
-    });
+            textoTotal.textContent = `Total: $${precioUnitario * cantidad} USD`;
+        };
 
-    // Al enviar "Añadir al Carrito", cancelamos el submit y mostramos el mensaje con after()
-    formAgregar.addEventListener("submit", (e) => {
-        e.preventDefault();
+        inputCantidad.addEventListener("input", () => {
+            actualizarTotalProducto();
+        });
 
-        // Nos aseguramos de que la cantidad esté validada entre 1 y 20
-        actualizarTotalProducto();
-        const cantidadElegida = Number(inputCantidad.value);
+        formAgregar.addEventListener("submit", (e) => {
+            e.preventDefault();
 
-        // Si ya había un mensaje anterior, lo quitamos antes de crear el nuevo
-        if (mensajeAgregado !== null) {
-            mensajeAgregado.remove();
-        }
+            actualizarTotalProducto();
+            const cantidadElegida = Number(inputCantidad.value);
 
-        mensajeAgregado = document.createElement("div");
-        mensajeAgregado.classList.add("added-to-cart-msg");
+            if (mensajeAgregado !== null) {
+                mensajeAgregado.remove();
+            }
 
-        const spanTexto = document.createElement("span");
-        spanTexto.textContent = `✔ Agregaste ${cantidadElegida} × ${tituloProducto}`;
+            mensajeAgregado = document.createElement("div");
+            mensajeAgregado.classList.add("added-to-cart-msg");
 
-        const linkCarrito = document.createElement("a");
-        linkCarrito.href = "cart.html";
-        linkCarrito.classList.add("added-to-cart-link");
-        linkCarrito.textContent = "Ir al carrito";
+            const spanTexto = document.createElement("span");
+            spanTexto.textContent = `✔ Agregaste ${cantidadElegida} × ${tituloProducto}`;
 
-        mensajeAgregado.append(spanTexto, linkCarrito);
+            const linkCarrito = document.createElement("a");
+            linkCarrito.href = "cart.html";
+            linkCarrito.classList.add("added-to-cart-link");
+            linkCarrito.textContent = "Ir al carrito";
 
-        // Insertamos el mensaje justo debajo del formulario usando after()
-        formAgregar.after(mensajeAgregado);
-    });
+            mensajeAgregado.append(spanTexto, linkCarrito);
+            formAgregar.after(mensajeAgregado);
+        });
+    }
 }
 
 /*
  * ============================================================
- *  MOSTRAR / OCULTAR CONTRASEÑA (login.html y registro.html)
+ *  7. MOSTRAR / OCULTAR CONTRASEÑA (login.html y registro.html)
  * ============================================================
- *  Una sola arrow function reutilizada con querySelectorAll + forEach
- *  sobre todos los input[type="password"].
- *  Crea con createElement un botón type="button" al lado del input
- *  que alterna entre type="password" (ojo tachado) y type="text"
- *  (ojo abierto) usando getAttribute, setAttribute y un ternario.
+ *  Páginas donde actúa: login.html y registro.html (o cualquier
+ *  página con input[type="password"]).
+ *  Qué hace: Define una sola arrow function reutilizada con
+ *  querySelectorAll + forEach que inserta al lado de cada input
+ *  de contraseña un botón type="button" con "👁" que alterna
+ *  entre type="password" (ojo tachado) y type="text" (ojo abierto)
+ *  con getAttribute, setAttribute y un operador ternario.
  * ============================================================
  */
 const agregarTogglePassword = (inputPassword) => {
     const contenedorPassword = document.createElement("div");
     contenedorPassword.classList.add("password-wrapper");
 
-    // Insertamos el contenedor en el lugar del input y metemos el input adentro
     inputPassword.before(contenedorPassword);
     contenedorPassword.appendChild(inputPassword);
 
     const btnVerPassword = document.createElement("button");
     btnVerPassword.type = "button";
-    // Arranca oculto (type="password"), por eso empieza con el ojo tachado
     btnVerPassword.classList.add("btn-toggle-pass", "ojo-tachado");
     btnVerPassword.textContent = "👁";
 
@@ -637,22 +662,21 @@ const agregarTogglePassword = (inputPassword) => {
     });
 };
 
-// Seleccionamos todos los inputs de contraseña de la página actual y les agregamos el botón
 const inputsPasswordPagina = document.querySelectorAll('input[type="password"]');
 inputsPasswordPagina.forEach(agregarTogglePassword);
 
 /*
  * ============================================================
- *  FORMULARIO DE REGISTRO (registro.html)
+ *  8. FORMULARIO DE REGISTRO (registro.html)
  * ============================================================
- *  Sin quitar la validación HTML existente:
- *   - Arrow function reutilizable mostrarError(input, mensaje) que
- *     agrega .input-error al input y un <span class="error-msg">
- *     debajo con createElement + after().
- *   - Al corregir, quita .input-error y elimina el span con remove().
+ *  Página donde actúa: registro.html (data-pagina="registro").
+ *  Qué hace:
+ *   - Define la arrow function reutilizable mostrarError(input, mensaje)
+ *     que agrega .input-error y un <span class="error-msg"> con after().
+ *   - Al corregir el campo, quita .input-error y remueve el span.
  *   - En el submit verifica que nombre y apellido no queden vacíos
  *     tras trim() y que password y confirm_password sean iguales (!==).
- *   - Si todo está bien, preventDefault y reemplaza el formulario
+ *   - Si todo es válido, hace preventDefault y reemplaza el formulario
  *     por "¡Cuenta creada, NOMBRE!".
  * ============================================================
  */
@@ -663,175 +687,184 @@ if (paginaActual === "registro") {
     const inputPassword = document.querySelector("#password");
     const inputConfirmPassword = document.querySelector("#confirm_password");
 
-    // Arrow function reutilizable para mostrar un error debajo de un input
-    const mostrarError = (input, mensaje) => {
-        const grupo = input.closest(".form-group");
-        // Si ya tenía un mensaje de error previo, lo quitamos primero para no duplicarlo
-        const errorPrevio = grupo.querySelector(".error-msg");
-        if (errorPrevio !== null) {
-            errorPrevio.remove();
-        }
+    if (
+        formRegistro === null ||
+        inputNombre === null ||
+        inputApellido === null ||
+        inputPassword === null ||
+        inputConfirmPassword === null
+    ) {
+        console.warn("Faltan elementos esperados en el formulario de registro.html.");
+    } else {
+        const mostrarError = (input, mensaje) => {
+            const grupo = input.closest(".form-group");
+            const errorPrevio = grupo.querySelector(".error-msg");
+            if (errorPrevio !== null) {
+                errorPrevio.remove();
+            }
 
-        input.classList.add("input-error");
+            input.classList.add("input-error");
 
-        const spanError = document.createElement("span");
-        spanError.classList.add("error-msg");
-        spanError.textContent = mensaje;
+            const spanError = document.createElement("span");
+            spanError.classList.add("error-msg");
+            spanError.textContent = mensaje;
 
-        // Si el input está dentro de .password-wrapper, ponemos el error debajo del wrapper
-        const elementoReferencia = input.parentElement.classList.contains("password-wrapper")
-            ? input.parentElement
-            : input;
-        elementoReferencia.after(spanError);
-    };
+            const elementoReferencia = input.parentElement.classList.contains("password-wrapper")
+                ? input.parentElement
+                : input;
+            elementoReferencia.after(spanError);
+        };
 
-    // Arrow function para limpiar el error de un input cuando el usuario lo corrige
-    const limpiarError = (input) => {
-        input.classList.remove("input-error");
-        const grupo = input.closest(".form-group");
-        const errorPrevio = grupo.querySelector(".error-msg");
-        if (errorPrevio !== null) {
-            errorPrevio.remove();
-        }
-    };
+        const limpiarError = (input) => {
+            input.classList.remove("input-error");
+            const grupo = input.closest(".form-group");
+            const errorPrevio = grupo.querySelector(".error-msg");
+            if (errorPrevio !== null) {
+                errorPrevio.remove();
+            }
+        };
 
-    // Al escribir en cualquiera de los campos validados, quitamos el error si ya fue corregido
-    inputNombre.addEventListener("input", () => {
-        if (inputNombre.value.trim() !== "") {
+        inputNombre.addEventListener("input", () => {
+            if (inputNombre.value.trim() !== "") {
+                limpiarError(inputNombre);
+            }
+        });
+
+        inputApellido.addEventListener("input", () => {
+            if (inputApellido.value.trim() !== "") {
+                limpiarError(inputApellido);
+            }
+        });
+
+        inputPassword.addEventListener("input", () => {
+            if (inputPassword.value === inputConfirmPassword.value) {
+                limpiarError(inputConfirmPassword);
+            }
+        });
+
+        inputConfirmPassword.addEventListener("input", () => {
+            if (inputPassword.value === inputConfirmPassword.value) {
+                limpiarError(inputConfirmPassword);
+            }
+        });
+
+        formRegistro.addEventListener("submit", (e) => {
+            e.preventDefault();
+
             limpiarError(inputNombre);
-        }
-    });
-
-    inputApellido.addEventListener("input", () => {
-        if (inputApellido.value.trim() !== "") {
             limpiarError(inputApellido);
-        }
-    });
-
-    inputPassword.addEventListener("input", () => {
-        if (inputPassword.value === inputConfirmPassword.value) {
             limpiarError(inputConfirmPassword);
-        }
-    });
 
-    inputConfirmPassword.addEventListener("input", () => {
-        if (inputPassword.value === inputConfirmPassword.value) {
-            limpiarError(inputConfirmPassword);
-        }
-    });
+            let hayErrores = false;
 
-    formRegistro.addEventListener("submit", (e) => {
-        e.preventDefault();
+            if (inputNombre.value.trim() === "") {
+                mostrarError(inputNombre, "El nombre no puede quedar vacío.");
+                hayErrores = true;
+            }
 
-        // Limpiamos errores previos antes de volver a validar
-        limpiarError(inputNombre);
-        limpiarError(inputApellido);
-        limpiarError(inputConfirmPassword);
+            if (inputApellido.value.trim() === "") {
+                mostrarError(inputApellido, "El apellido no puede quedar vacío.");
+                hayErrores = true;
+            }
 
-        let hayErrores = false;
+            if (inputPassword.value !== inputConfirmPassword.value) {
+                mostrarError(inputConfirmPassword, "Las contraseñas no coinciden.");
+                hayErrores = true;
+            }
 
-        // 1) Verificamos que nombre no quede vacío después de trim()
-        if (inputNombre.value.trim() === "") {
-            mostrarError(inputNombre, "El nombre no puede quedar vacío.");
-            hayErrores = true;
-        }
+            if (hayErrores) {
+                return;
+            }
 
-        // 2) Verificamos que apellido no quede vacío después de trim()
-        if (inputApellido.value.trim() === "") {
-            mostrarError(inputApellido, "El apellido no puede quedar vacío.");
-            hayErrores = true;
-        }
+            const nombreLimpio = inputNombre.value.trim();
+            const mensajeExito = document.createElement("p");
+            mensajeExito.classList.add("form-success-msg");
+            mensajeExito.textContent = `¡Cuenta creada, ${nombreLimpio}!`;
 
-        // 3) Verificamos que password y confirm_password sean iguales (!==)
-        if (inputPassword.value !== inputConfirmPassword.value) {
-            mostrarError(inputConfirmPassword, "Las contraseñas no coinciden.");
-            hayErrores = true;
-        }
-
-        // Si hubo algún error, cortamos acá
-        if (hayErrores) {
-            return;
-        }
-
-        // Si todo está bien, reemplazamos el formulario por "¡Cuenta creada, NOMBRE!"
-        const nombreLimpio = inputNombre.value.trim();
-        const mensajeExito = document.createElement("p");
-        mensajeExito.classList.add("form-success-msg");
-        mensajeExito.textContent = `¡Cuenta creada, ${nombreLimpio}!`;
-
-        formRegistro.after(mensajeExito);
-        formRegistro.remove();
-    });
+            formRegistro.after(mensajeExito);
+            formRegistro.remove();
+        });
+    }
 }
 
 /*
  * ============================================================
- *  FORMULARIO DE INICIO DE SESIÓN (login.html)
+ *  9. FORMULARIO DE INICIO DE SESIÓN (login.html)
  * ============================================================
- *  Al enviar el formulario válido:
- *   - Cancela el envío con preventDefault().
- *   - Oculta el formulario con classList.add("oculto").
- *   - Muestra "¡Bienvenido de nuevo!" con template literal.
+ *  Página donde actúa: login.html (data-pagina="login").
+ *  Qué hace: Al enviar el formulario válido, cancela el envío
+ *  con preventDefault(), oculta el formulario con classList.add("oculto")
+ *  y muestra "¡Bienvenido de nuevo!" con template literal.
  * ============================================================
  */
 if (paginaActual === "login") {
     const formLogin = document.querySelector(".auth-form");
     const inputEmailLogin = document.querySelector("#email");
 
-    formLogin.addEventListener("submit", (e) => {
-        e.preventDefault();
+    if (formLogin === null || inputEmailLogin === null) {
+        console.warn("Faltan elementos esperados en el formulario de login.html.");
+    } else {
+        formLogin.addEventListener("submit", (e) => {
+            e.preventDefault();
 
-        const emailIngresado = inputEmailLogin.value.trim();
-        formLogin.classList.add("oculto");
+            const emailIngresado = inputEmailLogin.value.trim();
+            formLogin.classList.add("oculto");
 
-        const mensajeExito = document.createElement("p");
-        mensajeExito.classList.add("form-success-msg");
-        mensajeExito.textContent = `¡Bienvenido de nuevo! (${emailIngresado})`;
+            const mensajeExito = document.createElement("p");
+            mensajeExito.classList.add("form-success-msg");
+            mensajeExito.textContent = `¡Bienvenido de nuevo! (${emailIngresado})`;
 
-        formLogin.after(mensajeExito);
-    });
+            formLogin.after(mensajeExito);
+        });
+    }
 }
 
 /*
  * ============================================================
- *  FORMULARIO DE RECUPERAR CONTRASEÑA (recuperar-password.html)
+ *  10. FORMULARIO DE RECUPERAR CONTRASEÑA (recuperar-password.html)
  * ============================================================
- *  Al enviar el formulario válido:
- *   - Cancela el envío con preventDefault().
- *   - Lee el email con .value y oculta el formulario con .oculto.
- *   - Muestra "Te enviamos un correo a EMAIL" con template literal.
+ *  Página donde actúa: recuperar-password.html (data-pagina="recuperar").
+ *  Qué hace: Al enviar el formulario válido, cancela el envío con
+ *  preventDefault(), lee el email con .value, oculta el formulario
+ *  con classList.add("oculto") y muestra "Te enviamos un correo a EMAIL".
  * ============================================================
  */
 if (paginaActual === "recuperar") {
     const formRecuperar = document.querySelector(".auth-form");
     const inputEmailRecuperar = document.querySelector("#email");
 
-    formRecuperar.addEventListener("submit", (e) => {
-        e.preventDefault();
+    if (formRecuperar === null || inputEmailRecuperar === null) {
+        console.warn("Faltan elementos esperados en recuperar-password.html.");
+    } else {
+        formRecuperar.addEventListener("submit", (e) => {
+            e.preventDefault();
 
-        const email = inputEmailRecuperar.value.trim();
-        formRecuperar.classList.add("oculto");
+            const email = inputEmailRecuperar.value.trim();
+            formRecuperar.classList.add("oculto");
 
-        const mensajeExito = document.createElement("p");
-        mensajeExito.classList.add("form-success-msg");
-        mensajeExito.textContent = `Te enviamos un correo a ${email}`;
+            const mensajeExito = document.createElement("p");
+            mensajeExito.classList.add("form-success-msg");
+            mensajeExito.textContent = `Te enviamos un correo a ${email}`;
 
-        formRecuperar.after(mensajeExito);
-    });
+            formRecuperar.after(mensajeExito);
+        });
+    }
 }
 
 /*
  * ============================================================
- *  FORMULARIO DE CONTACTO (contacto.html)
+ *  11. FORMULARIO DE CONTACTO (contacto.html)
  * ============================================================
- *  - Agrega debajo del textarea un contador "N / 500 caracteres"
- *    que se actualiza en vivo con "input" usando .length y cambia
- *    de color con classList.toggle al pasar 450 caracteres.
- *  - Al enviar el formulario: preventDefault, muestra con console.table
- *    los datos enviados, oculta el formulario con classList.add("oculto")
- *    y muestra "¡Gracias NOMBRE! Te responderemos a EMAIL" junto a un
- *    botón "Enviar otro mensaje" que limpia los campos (.value = "")
- *    y vuelve a mostrar el formulario.
+ *  Página donde actúa: contacto.html (data-pagina="contacto").
+ *  Qué hace:
+ *   - Agrega un contador "N / 500 caracteres" bajo el textarea que
+ *     se actualiza con "input" usando .length y cambia de color con
+ *     classList.toggle al pasar 450 caracteres.
+ *   - Al hacer submit: preventDefault, muestra con console.table los
+ *     datos enviados, oculta el formulario con classList.add("oculto")
+ *     y muestra "¡Gracias NOMBRE! Te responderemos a EMAIL" junto al
+ *     botón "Enviar otro mensaje" que limpia los campos (.value = "")
+ *     y vuelve a mostrar el formulario.
  * ============================================================
  */
 if (paginaActual === "contacto") {
@@ -843,92 +876,97 @@ if (paginaActual === "contacto") {
     const textareaMensaje = document.querySelector("#mensaje");
     const checkPrivacidad = document.querySelector('input[name="privacidad"]');
 
-    // Creamos el contador "0 / 500 caracteres" debajo del textarea
-    const contadorCaracteres = document.createElement("span");
-    contadorCaracteres.classList.add("char-counter");
-    contadorCaracteres.textContent = `${textareaMensaje.value.length} / 500 caracteres`;
-    textareaMensaje.after(contadorCaracteres);
+    if (
+        formContacto === null ||
+        inputNombreContacto === null ||
+        inputEmailContacto === null ||
+        inputTelefonoContacto === null ||
+        selectMotivoContacto === null ||
+        textareaMensaje === null ||
+        checkPrivacidad === null
+    ) {
+        console.warn("Faltan elementos esperados en el formulario de contacto.html.");
+    } else {
+        const contadorCaracteres = document.createElement("span");
+        contadorCaracteres.classList.add("char-counter");
+        contadorCaracteres.textContent = `${textareaMensaje.value.length} / 500 caracteres`;
+        textareaMensaje.after(contadorCaracteres);
 
-    // Actualizamos el contador en cada "input" y cambiamos de color al pasar 450
-    textareaMensaje.addEventListener("input", () => {
-        const cantidadCaracteres = textareaMensaje.value.length;
-        contadorCaracteres.textContent = `${cantidadCaracteres} / 500 caracteres`;
-        contadorCaracteres.classList.toggle("char-limit-warn", cantidadCaracteres > 450);
-    });
-
-    let bloqueExitoContacto = null;
-
-    formContacto.addEventListener("submit", (e) => {
-        e.preventDefault();
-
-        const nombre = inputNombreContacto.value.trim();
-        const email = inputEmailContacto.value.trim();
-        const telefono = inputTelefonoContacto.value.trim();
-        const motivo = selectMotivoContacto.value;
-        const mensaje = textareaMensaje.value.trim();
-
-        // Mostramos los datos enviados con console.table()
-        const datosEnviados = {
-            nombre: nombre,
-            email: email,
-            telefono: telefono,
-            motivo: motivo,
-            mensaje: mensaje
-        };
-        console.table(datosEnviados);
-
-        // Ocultamos el formulario con classList.add("oculto")
-        formContacto.classList.add("oculto");
-
-        // Si ya existía un mensaje previo, lo quitamos antes de crear el nuevo
-        if (bloqueExitoContacto !== null) {
-            bloqueExitoContacto.remove();
-        }
-
-        bloqueExitoContacto = document.createElement("div");
-        bloqueExitoContacto.classList.add("form-success-msg");
-
-        const textoExito = document.createElement("p");
-        textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
-
-        const btnOtroMensaje = document.createElement("button");
-        btnOtroMensaje.type = "button";
-        btnOtroMensaje.classList.add("auth-submit-btn");
-        btnOtroMensaje.textContent = "Enviar otro mensaje";
-
-        // Al hacer click en "Enviar otro mensaje", limpiamos los campos y volvemos a mostrar el form
-        btnOtroMensaje.addEventListener("click", () => {
-            inputNombreContacto.value = "";
-            inputEmailContacto.value = "";
-            inputTelefonoContacto.value = "";
-            selectMotivoContacto.value = "";
-            textareaMensaje.value = "";
-            checkPrivacidad.checked = false;
-
-            // Reseteamos también el contador de caracteres
-            contadorCaracteres.textContent = "0 / 500 caracteres";
-            contadorCaracteres.classList.remove("char-limit-warn");
-
-            bloqueExitoContacto.remove();
-            bloqueExitoContacto = null;
-            formContacto.classList.remove("oculto");
+        textareaMensaje.addEventListener("input", () => {
+            const cantidadCaracteres = textareaMensaje.value.length;
+            contadorCaracteres.textContent = `${cantidadCaracteres} / 500 caracteres`;
+            contadorCaracteres.classList.toggle("char-limit-warn", cantidadCaracteres > 450);
         });
 
-        bloqueExitoContacto.append(textoExito, btnOtroMensaje);
-        formContacto.after(bloqueExitoContacto);
-    });
+        let bloqueExitoContacto = null;
+
+        formContacto.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const nombre = inputNombreContacto.value.trim();
+            const email = inputEmailContacto.value.trim();
+            const telefono = inputTelefonoContacto.value.trim();
+            const motivo = selectMotivoContacto.value;
+            const mensaje = textareaMensaje.value.trim();
+
+            const datosEnviados = {
+                nombre: nombre,
+                email: email,
+                telefono: telefono,
+                motivo: motivo,
+                mensaje: mensaje
+            };
+            console.table(datosEnviados);
+
+            formContacto.classList.add("oculto");
+
+            if (bloqueExitoContacto !== null) {
+                bloqueExitoContacto.remove();
+            }
+
+            bloqueExitoContacto = document.createElement("div");
+            bloqueExitoContacto.classList.add("form-success-msg");
+
+            const textoExito = document.createElement("p");
+            textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
+
+            const btnOtroMensaje = document.createElement("button");
+            btnOtroMensaje.type = "button";
+            btnOtroMensaje.classList.add("auth-submit-btn");
+            btnOtroMensaje.textContent = "Enviar otro mensaje";
+
+            btnOtroMensaje.addEventListener("click", () => {
+                inputNombreContacto.value = "";
+                inputEmailContacto.value = "";
+                inputTelefonoContacto.value = "";
+                selectMotivoContacto.value = "";
+                textareaMensaje.value = "";
+                checkPrivacidad.checked = false;
+
+                contadorCaracteres.textContent = "0 / 500 caracteres";
+                contadorCaracteres.classList.remove("char-limit-warn");
+
+                bloqueExitoContacto.remove();
+                bloqueExitoContacto = null;
+                formContacto.classList.remove("oculto");
+            });
+
+            bloqueExitoContacto.append(textoExito, btnOtroMensaje);
+            formContacto.after(bloqueExitoContacto);
+        });
+    }
 }
 
 /*
  * ============================================================
- *  ACORDEONES EXCLUSIVOS (<details>) EN FAQ Y PRODUCTOS
+ *  12. ACORDEONES EXCLUSIVOS (<details>) EN FAQ Y PRODUCTOS
  * ============================================================
- *  Tanto en la FAQ de contacto.html (.faq-item) como en las
- *  páginas de producto (.product-accordion), al abrir un <details>
- *  se cierran automáticamente los demás.
- *  Usamos querySelectorAll, el evento "toggle", hasAttribute("open")
- *  y removeAttribute("open") con forEach, comparando con !== para
- *  no cerrar el que se acaba de abrir.
+ *  Páginas donde actúa: contacto.html (.faq-item) y las 7 páginas
+ *  producto-*.html (.product-accordion).
+ *  Qué hace: Al abrir un <details>, cierra automáticamente los
+ *  demás usando querySelectorAll, el evento "toggle",
+ *  hasAttribute("open") y removeAttribute("open") con forEach,
+ *  comparando con !== para no cerrar el que se acaba de abrir.
  * ============================================================
  */
 const configurarAcordeonExclusivo = (selector) => {
@@ -936,9 +974,7 @@ const configurarAcordeonExclusivo = (selector) => {
 
     acordeones.forEach((acordeonActual) => {
         acordeonActual.addEventListener("toggle", () => {
-            // Verificamos si el acordeón se acaba de abrir con hasAttribute("open")
             if (acordeonActual.hasAttribute("open")) {
-                // Recorremos todos y cerramos los que sean distintos (!==) al que se abrió
                 acordeones.forEach((otroAcordeon) => {
                     if (otroAcordeon !== acordeonActual) {
                         otroAcordeon.removeAttribute("open");
@@ -949,76 +985,88 @@ const configurarAcordeonExclusivo = (selector) => {
     });
 };
 
-// Aplicamos la lógica a la FAQ de contacto.html y a los acordeones de producto-*.html
-configurarAcordeonExclusivo(".faq-item");
-configurarAcordeonExclusivo(".product-accordion");
+if (paginaActual === "contacto") {
+    const itemsFaq = document.querySelectorAll(".faq-item");
+    if (itemsFaq.length === 0) {
+        console.warn("No se encontraron acordeones .faq-item en contacto.html.");
+    } else {
+        configurarAcordeonExclusivo(".faq-item");
+    }
+}
+
+if (paginaActual === "producto") {
+    const acordeonesProducto = document.querySelectorAll(".product-accordion");
+    if (acordeonesProducto.length === 0) {
+        console.warn("No se encontraron acordeones .product-accordion en la página de producto.");
+    } else {
+        configurarAcordeonExclusivo(".product-accordion");
+    }
+}
 
 /*
  * ============================================================
- *  MEJORAS DE NAVEGACIÓN (TODAS LAS PÁGINAS)
+ *  13. MEJORAS DE NAVEGACIÓN (TODAS LAS PÁGINAS)
  * ============================================================
- *  1) Cerrar el menú mobile al tocar cualquier link del nav
- *     poniendo .checked = false en #menu-toggle.
- *  2) Cerrar el desplegable de Filtros del index al hacer click
- *     fuera (click en document + closest(".nav-filter-dropdown")
- *     + removeAttribute("open")), usando stopPropagation para que
- *     los clicks dentro no lo cierren.
- *  3) Resaltar el link del menú de la página actual comparando
- *     document.body.dataset.pagina con getAttribute("href") de
- *     cada link y agregando la clase .activo.
+ *  Páginas donde actúa: TODAS.
+ *  Qué hace:
+ *   1) Cierra el menú mobile al tocar cualquier link del nav
+ *      poniendo .checked = false en #menu-toggle.
+ *   2) Cierra el desplegable de Filtros del index al hacer click
+ *      fuera (click en document + closest(".nav-filter-dropdown")
+ *      + removeAttribute("open")), usando stopPropagation para que
+ *      los clicks dentro no lo cierren.
+ *   3) Resalta el link del menú de la página actual comparando
+ *      document.body.dataset.pagina con getAttribute("href") de
+ *      cada link y agregando la clase .activo.
  * ============================================================
  */
 const checkboxMenuMobile = document.querySelector("#menu-toggle");
 const linksNavegacion = document.querySelectorAll(".header-nav a");
 
-// 1) y 3) Recorremos todos los links del nav
-linksNavegacion.forEach((link) => {
-    // 1) Al tocar cualquier link del nav, cerramos el menú mobile
-    link.addEventListener("click", () => {
-        if (checkboxMenuMobile !== null) {
+if (checkboxMenuMobile === null || linksNavegacion.length === 0) {
+    console.warn("Faltan elementos de navegación (#menu-toggle o links del .header-nav).");
+} else {
+    linksNavegacion.forEach((link) => {
+        // 1) Al tocar cualquier link del nav, cerramos el menú mobile
+        link.addEventListener("click", () => {
             checkboxMenuMobile.checked = false;
-        }
-    });
-
-    // 3) Comparamos document.body.dataset.pagina con getAttribute("href")
-    const hrefLink = link.getAttribute("href");
-
-    const esIndex = paginaActual === "index" && (hrefLink === "#inicio" || hrefLink === "index.html");
-    const esProducto = paginaActual === "producto" && hrefLink === "index.html#catalogo";
-    const esContacto = paginaActual === "contacto" && hrefLink === "contacto.html";
-    const esLogin = paginaActual === "login" && hrefLink === "login.html";
-    const esRegistro = paginaActual === "registro" && hrefLink === "registro.html";
-    const esCarrito = paginaActual === "cart" && hrefLink === "cart.html";
-
-    if (esIndex || esProducto || esContacto || esLogin || esRegistro || esCarrito) {
-        link.classList.add("activo");
-    }
-});
-
-// 2) Cerrar el desplegable de Filtros al hacer click fuera
-const menuFiltrosIndex = document.querySelector(".nav-filter-dropdown");
-
-if (menuFiltrosIndex !== null) {
-    const panelInteriorFiltros = menuFiltrosIndex.querySelector(".nav-filter-menu");
-
-    // Usamos stopPropagation dentro del panel para que los clicks internos no suban al document
-    if (panelInteriorFiltros !== null) {
-        panelInteriorFiltros.addEventListener("click", (e) => {
-            e.stopPropagation();
         });
-    }
 
-    // Si el click en el documento fue fuera de .nav-filter-dropdown, lo cerramos
-    document.addEventListener("click", (e) => {
-        if (e.target.closest(".nav-filter-dropdown") === null) {
-            menuFiltrosIndex.removeAttribute("open");
+        // 3) Comparamos document.body.dataset.pagina con getAttribute("href")
+        const hrefLink = link.getAttribute("href");
+
+        const esIndex = paginaActual === "index" && (hrefLink === "#inicio" || hrefLink === "index.html");
+        const esProducto = paginaActual === "producto" && hrefLink === "index.html#catalogo";
+        const esContacto = paginaActual === "contacto" && hrefLink === "contacto.html";
+        const esLogin = paginaActual === "login" && hrefLink === "login.html";
+        const esRegistro = paginaActual === "registro" && hrefLink === "registro.html";
+        const esCarrito = paginaActual === "cart" && hrefLink === "cart.html";
+
+        if (esIndex || esProducto || esContacto || esLogin || esRegistro || esCarrito) {
+            link.classList.add("activo");
         }
     });
 }
 
+// 2) Cerrar el desplegable de Filtros al hacer click fuera (solo en index.html)
+if (paginaActual === "index") {
+    const menuFiltrosIndex = document.querySelector(".nav-filter-dropdown");
 
+    if (menuFiltrosIndex === null) {
+        console.warn("No se encontró el desplegable .nav-filter-dropdown en index.html.");
+    } else {
+        const panelInteriorFiltros = menuFiltrosIndex.querySelector(".nav-filter-menu");
 
+        if (panelInteriorFiltros !== null) {
+            panelInteriorFiltros.addEventListener("click", (e) => {
+                e.stopPropagation();
+            });
+        }
 
-
-
-
+        document.addEventListener("click", (e) => {
+            if (e.target.closest(".nav-filter-dropdown") === null) {
+                menuFiltrosIndex.removeAttribute("open");
+            }
+        });
+    }
+}
