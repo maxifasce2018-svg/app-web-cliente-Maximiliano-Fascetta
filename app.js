@@ -1285,11 +1285,17 @@ if (paginaActual === "recuperar") {
  *   - Agrega un contador "N / 500 caracteres" bajo el textarea que
  *     se actualiza con "input" usando .length y cambia de color con
  *     classList.toggle al pasar 450 caracteres.
- *   - Al hacer submit: preventDefault, muestra con console.table los
- *     datos enviados, oculta el formulario con classList.add("oculto")
+ *   - Al hacer submit: preventDefault, arma el objeto con nombre,
+ *     email, telefono, motivo y mensaje (trim) y hace POST a
+ *     /rest/v1/mensajes_contacto usando fetch().then().catch().finally()
+ *     (verificando if (!res.ok) en el primer .then).
+ *   - Mientras envía, deshabilita el botón y cambia su texto a
+ *     "Enviando..."; en .finally() vuelve a habilitarlo.
+ *   - Si sale bien, oculta el formulario con classList.add("oculto")
  *     y muestra "¡Gracias NOMBRE! Te responderemos a EMAIL" junto al
  *     botón "Enviar otro mensaje" que limpia los campos (.value = "")
  *     y vuelve a mostrar el formulario.
+ *   - Si falla, muestra un mensaje de error sin ocultar el formulario.
  * ============================================================
  */
 if (paginaActual === "contacto") {
@@ -1300,6 +1306,7 @@ if (paginaActual === "contacto") {
     const selectMotivoContacto = document.querySelector("#motivo");
     const textareaMensaje = document.querySelector("#mensaje");
     const checkPrivacidad = document.querySelector('input[name="privacidad"]');
+    const btnEnviarContacto = document.querySelector(".auth-submit-btn");
 
     if (
         formContacto === null ||
@@ -1308,7 +1315,8 @@ if (paginaActual === "contacto") {
         inputTelefonoContacto === null ||
         selectMotivoContacto === null ||
         textareaMensaje === null ||
-        checkPrivacidad === null
+        checkPrivacidad === null ||
+        btnEnviarContacto === null
     ) {
         console.warn("Faltan elementos esperados en el formulario de contacto.html.");
     } else {
@@ -1324,6 +1332,7 @@ if (paginaActual === "contacto") {
         });
 
         let bloqueExitoContacto = null;
+        let mensajeErrorContacto = null;
 
         formContacto.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -1334,50 +1343,81 @@ if (paginaActual === "contacto") {
             const motivo = selectMotivoContacto.value;
             const mensaje = textareaMensaje.value.trim();
 
-            const datosEnviados = {
+            const datos = {
                 nombre: nombre,
                 email: email,
                 telefono: telefono,
                 motivo: motivo,
                 mensaje: mensaje
             };
-            console.table(datosEnviados);
 
-            formContacto.classList.add("oculto");
-
-            if (bloqueExitoContacto !== null) {
-                bloqueExitoContacto.remove();
+            if (mensajeErrorContacto !== null) {
+                mensajeErrorContacto.remove();
+                mensajeErrorContacto = null;
             }
 
-            bloqueExitoContacto = document.createElement("div");
-            bloqueExitoContacto.classList.add("form-success-msg");
+            // Mientras se envía el mensaje, deshabilitamos el botón y cambiamos su texto
+            btnEnviarContacto.disabled = true;
+            btnEnviarContacto.textContent = "Enviando...";
 
-            const textoExito = document.createElement("p");
-            textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
+            fetch(`${SUPABASE_URL}/rest/v1/mensajes_contacto`, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(datos)
+            })
+                .then((res) => {
+                    if (!res.ok) {
+                        throw new Error(`Error HTTP ${res.status} al guardar el mensaje de contacto`);
+                    }
 
-            const btnOtroMensaje = document.createElement("button");
-            btnOtroMensaje.type = "button";
-            btnOtroMensaje.classList.add("auth-submit-btn");
-            btnOtroMensaje.textContent = "Enviar otro mensaje";
+                    formContacto.classList.add("oculto");
 
-            btnOtroMensaje.addEventListener("click", () => {
-                inputNombreContacto.value = "";
-                inputEmailContacto.value = "";
-                inputTelefonoContacto.value = "";
-                selectMotivoContacto.value = "";
-                textareaMensaje.value = "";
-                checkPrivacidad.checked = false;
+                    if (bloqueExitoContacto !== null) {
+                        bloqueExitoContacto.remove();
+                    }
 
-                contadorCaracteres.textContent = "0 / 500 caracteres";
-                contadorCaracteres.classList.remove("char-limit-warn");
+                    bloqueExitoContacto = document.createElement("div");
+                    bloqueExitoContacto.classList.add("form-success-msg");
 
-                bloqueExitoContacto.remove();
-                bloqueExitoContacto = null;
-                formContacto.classList.remove("oculto");
-            });
+                    const textoExito = document.createElement("p");
+                    textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
 
-            bloqueExitoContacto.append(textoExito, btnOtroMensaje);
-            formContacto.after(bloqueExitoContacto);
+                    const btnOtroMensaje = document.createElement("button");
+                    btnOtroMensaje.type = "button";
+                    btnOtroMensaje.classList.add("auth-submit-btn");
+                    btnOtroMensaje.textContent = "Enviar otro mensaje";
+
+                    btnOtroMensaje.addEventListener("click", () => {
+                        inputNombreContacto.value = "";
+                        inputEmailContacto.value = "";
+                        inputTelefonoContacto.value = "";
+                        selectMotivoContacto.value = "";
+                        textareaMensaje.value = "";
+                        checkPrivacidad.checked = false;
+
+                        contadorCaracteres.textContent = "0 / 500 caracteres";
+                        contadorCaracteres.classList.remove("char-limit-warn");
+
+                        bloqueExitoContacto.remove();
+                        bloqueExitoContacto = null;
+                        formContacto.classList.remove("oculto");
+                    });
+
+                    bloqueExitoContacto.append(textoExito, btnOtroMensaje);
+                    formContacto.after(bloqueExitoContacto);
+                })
+                .catch((error) => {
+                    console.error("No se pudo enviar el mensaje de contacto a Supabase:", error);
+
+                    mensajeErrorContacto = document.createElement("p");
+                    mensajeErrorContacto.classList.add("error-msg");
+                    mensajeErrorContacto.textContent = "No se pudo enviar tu mensaje. Por favor, intentá de nuevo más tarde.";
+                    formContacto.after(mensajeErrorContacto);
+                })
+                .finally(() => {
+                    btnEnviarContacto.disabled = false;
+                    btnEnviarContacto.textContent = "Enviar Mensaje";
+                });
         });
     }
 }
