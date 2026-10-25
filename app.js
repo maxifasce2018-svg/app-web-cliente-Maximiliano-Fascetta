@@ -16,7 +16,7 @@
  *
  *  ÍNDICE DE SECCIONES DEL ARCHIVO:
  *   1. Inicialización y lectura de data-pagina (Todas las páginas)
- *   2. Catálogo: lectura de datos data-* de las tarjetas (index.html)
+ *   2. Catálogo desde Supabase con fetch y lectura de datos data-* (index.html)
  *   3. Buscador en tiempo real y sistema de filtros (index.html)
  *   4. Enlaces del menú de navegación con switch (index.html)
  *   5. Carrito de compras interactivo y resumen con reduce (cart.html)
@@ -52,16 +52,118 @@ if (!paginaActual) {
 
 /*
  * ============================================================
- *  2. CATÁLOGO: LECTURA DE DATOS DE LAS TARJETAS (data-*)
+ *  2. CATÁLOGO DESDE SUPABASE (fetch) Y LECTURA DE DATOS (data-*)
  * ============================================================
  *  Página donde actúa: index.html (data-pagina="index").
- *  Qué hace: Recorre las .product-card con for...of, lee sus
- *  atributos data-categoria, data-coleccion, data-precio (con
- *  Number()) y data-badge mediante dataset, arma un array de
- *  objetos y lo muestra en consola con console.table().
+ *  Qué hace:
+ *   - Define UNA sola vez SUPABASE_URL, SUPABASE_KEY y el objeto
+ *     headers que se usan en las peticiones con fetch.
+ *   - obtenerProductos(): arrow function async que hace un GET a
+ *     /rest/v1/productos con try/catch y if (!res.ok), y devuelve
+ *     los productos con res.json() (o null si algo falla).
+ *   - crearTarjeta(): arma cada .product-card con createElement,
+ *     guardando categoria, coleccion, precio y badge en data-*
+ *     mediante dataset.
+ *   - Mientras carga muestra "Cargando productos..." y si falla
+ *     muestra un mensaje de error con textContent.
+ *   - Cuando las tarjetas ya están en el .product-grid (creadas con
+ *     .map()), ejecuta iniciarCatalogo(), que recorre las tarjetas
+ *     con for...of, lee sus data-* (precio con Number()), las
+ *     muestra con console.table() y activa el buscador, los
+ *     filtros, el contador y los links del menú (secciones 3 y 4).
  * ============================================================
  */
-if (paginaActual === "index") {
+const SUPABASE_URL = "https://vwomelsxjbhvijfrrize.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TWFfoLPf_qVAldaGeeXy1g_pAJQNQDX";
+
+const headers = {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`
+};
+
+// GET de todos los productos ordenados por id. Devuelve el array o null si falla.
+const obtenerProductos = async () => {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?select=*&order=id.asc`, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!res.ok) {
+            throw new Error(`Error HTTP ${res.status} al pedir los productos`);
+        }
+
+        const productos = await res.json();
+        return productos;
+    } catch (error) {
+        console.error("No se pudieron obtener los productos de Supabase:", error);
+        return null;
+    }
+};
+
+// Texto y clase CSS de cada badge según el valor guardado en Supabase
+const textosBadge = { nuevo: "NUEVO", oferta: "OFERTA", popular: "POPULAR" };
+const clasesBadge = { nuevo: "badge-new", oferta: "badge-sale", popular: "badge-popular" };
+
+// Crea un <article class="product-card"> con la misma estructura que tenía el HTML
+const crearTarjeta = (producto) => {
+    const tarjeta = document.createElement("article");
+    tarjeta.classList.add("product-card");
+    tarjeta.dataset.categoria = producto.categoria;
+    tarjeta.dataset.coleccion = producto.coleccion;
+    tarjeta.dataset.precio = producto.precio;
+    tarjeta.dataset.badge = producto.badge !== null ? producto.badge : "";
+
+    // Imagen + badge
+    const contenedorImagen = document.createElement("div");
+    contenedorImagen.classList.add("product-image");
+
+    if (clasesBadge[producto.badge] !== undefined) {
+        const badge = document.createElement("span");
+        badge.classList.add("card-badge", clasesBadge[producto.badge]);
+        badge.textContent = textosBadge[producto.badge];
+        contenedorImagen.appendChild(badge);
+    }
+
+    const imagen = document.createElement("img");
+    imagen.src = producto.imagen_url;
+    imagen.alt = producto.nombre;
+    contenedorImagen.appendChild(imagen);
+
+    // Cuerpo: título, descripción (si existe en la tabla), precio y link
+    const cuerpo = document.createElement("div");
+    cuerpo.classList.add("product-body");
+
+    const titulo = document.createElement("h3");
+    titulo.classList.add("product-title");
+    titulo.textContent = producto.nombre;
+    cuerpo.appendChild(titulo);
+
+    if (producto.descripcion) {
+        const descripcion = document.createElement("p");
+        descripcion.classList.add("product-description");
+        descripcion.textContent = producto.descripcion;
+        cuerpo.appendChild(descripcion);
+    }
+
+    const precio = document.createElement("p");
+    precio.classList.add("product-price");
+    precio.textContent = `$${producto.precio} USD`;
+    cuerpo.appendChild(precio);
+
+    const link = document.createElement("a");
+    link.href = producto.pagina_detalle;
+    link.classList.add("product-link");
+    link.textContent = "Ver Detalle";
+    cuerpo.appendChild(link);
+
+    tarjeta.append(contenedorImagen, cuerpo);
+    return tarjeta;
+};
+
+// Todo lo que depende de las tarjetas se ejecuta recién cuando ya fueron creadas
+const iniciarCatalogo = () => {
     const tarjetas = document.querySelectorAll(".product-card");
 
     if (tarjetas.length === 0) {
@@ -351,6 +453,44 @@ if (paginaActual === "index") {
                 });
             }
         }
+    }
+};
+
+// Carga del catálogo: mensaje "Cargando...", fetch, .map() de tarjetas e inicio del buscador/filtros
+if (paginaActual === "index") {
+    const grillaCatalogo = document.querySelector(".product-grid");
+    const seccionCatalogo = document.querySelector(".catalog");
+
+    if (grillaCatalogo === null || seccionCatalogo === null) {
+        console.warn("No se encontró el .product-grid o la sección .catalog en index.html.");
+    } else {
+        const mensajeEstado = document.createElement("p");
+        mensajeEstado.textContent = "Cargando productos...";
+        seccionCatalogo.insertBefore(mensajeEstado, grillaCatalogo);
+
+        const cargarCatalogo = async () => {
+            const productos = await obtenerProductos();
+
+            if (productos === null) {
+                mensajeEstado.textContent = "No se pudieron cargar los productos. Por favor, intentá de nuevo más tarde.";
+                return;
+            }
+
+            if (productos.length === 0) {
+                mensajeEstado.textContent = "No hay productos disponibles por el momento.";
+                return;
+            }
+
+            // Creamos todas las tarjetas con .map() y las agregamos al grid
+            const tarjetasCreadas = productos.map((producto) => crearTarjeta(producto));
+            grillaCatalogo.append(...tarjetasCreadas);
+            mensajeEstado.remove();
+
+            // Recién ahora que existen las tarjetas activamos buscador, filtros, contador y menú
+            iniciarCatalogo();
+        };
+
+        cargarCatalogo();
     }
 }
 
