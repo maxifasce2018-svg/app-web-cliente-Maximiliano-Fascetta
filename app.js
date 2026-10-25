@@ -15,17 +15,17 @@
  *  el código que corresponde.
  *
  *  ÍNDICE DE SECCIONES DEL ARCHIVO:
- *   1. Inicialización y lectura de data-pagina (Todas las páginas)
+ *   1. Inicialización, página actual y configuración de Supabase (Todas las páginas)
  *   2. Catálogo desde Supabase con fetch y lectura de datos data-* (index.html)
  *   3. Buscador en tiempo real y sistema de filtros (index.html)
  *   4. Enlaces del menú de navegación con switch (index.html)
- *   5. Carrito de compras interactivo y resumen con reduce (cart.html)
- *   6. Detalle de producto: total en vivo y agregar al carrito (producto-*.html)
+ *   5. Carrito de compras conectado a Supabase y resumen con reduce (cart.html)
+ *   6. Detalle de producto con Supabase: total en vivo y agregar al carrito (producto-*.html)
  *   7. Mostrar / ocultar contraseña con botón 👁 (login.html y registro.html)
  *   8. Validación del formulario de registro (registro.html)
  *   9. Formulario de inicio de sesión (login.html)
  *  10. Formulario de recuperar contraseña (recuperar-password.html)
- *  11. Formulario de contacto y contador de caracteres (contacto.html)
+ *  11. Formulario de contacto con Supabase y contador de caracteres (contacto.html)
  *  12. Acordeones exclusivos <details> en FAQ y productos (contacto.html y producto-*.html)
  *  13. Mejoras de navegación: menú mobile, click afuera en filtros y link activo (Todas las páginas)
  *
@@ -34,12 +34,16 @@
 
 /*
  * ============================================================
- *  1. INICIALIZACIÓN Y LECTURA DE PÁGINA ACTUAL
+ *  1. INICIALIZACIÓN, PÁGINA ACTUAL Y CONFIGURACIÓN DE SUPABASE
  * ============================================================
  *  Páginas donde actúa: TODAS.
- *  Qué hace: Lee document.body.dataset.pagina para identificar
- *  la página actual y muestra un mensaje en consola. Si falta
- *  el atributo, avisa con console.warn.
+ *  Qué hace:
+ *   - Lee document.body.dataset.pagina para identificar la página
+ *     actual y muestra un mensaje en consola. Si falta el atributo,
+ *     avisa con console.warn.
+ *   - Define UNA sola vez las constantes SUPABASE_URL, SUPABASE_KEY
+ *     y el objeto headers que reutilizan todas las peticiones fetch
+ *     del sitio (index.html, producto-*.html, cart.html y contacto.html).
  * ============================================================
  */
 const paginaActual = document.body.dataset.pagina;
@@ -50,17 +54,25 @@ if (!paginaActual) {
     console.log(`app.js cargado correctamente en la página: ${paginaActual}`);
 }
 
+const SUPABASE_URL = "https://vwomelsxjbhvijfrrize.supabase.co";
+const SUPABASE_KEY = "sb_publishable_TWFfoLPf_qVAldaGeeXy1g_pAJQNQDX";
+
+const headers = {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`
+};
+
 /*
  * ============================================================
  *  2. CATÁLOGO DESDE SUPABASE (fetch) Y LECTURA DE DATOS (data-*)
  * ============================================================
  *  Página donde actúa: index.html (data-pagina="index").
  *  Qué hace:
- *   - Define UNA sola vez SUPABASE_URL, SUPABASE_KEY y el objeto
- *     headers que se usan en las peticiones con fetch.
  *   - obtenerProductos(): arrow function async que hace un GET a
- *     /rest/v1/productos con try/catch y if (!res.ok), y devuelve
- *     los productos con res.json() (o null si algo falla).
+ *     /rest/v1/productos?select=*&order=id.asc con try/catch y
+ *     if (!res.ok), y devuelve los productos con res.json()
+ *     (o null si algo falla).
  *   - crearTarjeta(): arma cada .product-card con createElement,
  *     guardando categoria, coleccion, precio y badge en data-*
  *     mediante dataset.
@@ -73,15 +85,6 @@ if (!paginaActual) {
  *     filtros, el contador y los links del menú (secciones 3 y 4).
  * ============================================================
  */
-const SUPABASE_URL = "https://vwomelsxjbhvijfrrize.supabase.co";
-const SUPABASE_KEY = "sb_publishable_TWFfoLPf_qVAldaGeeXy1g_pAJQNQDX";
-
-const headers = {
-    "Content-Type": "application/json",
-    apikey: SUPABASE_KEY,
-    Authorization: `Bearer ${SUPABASE_KEY}`
-};
-
 // GET de todos los productos ordenados por id. Devuelve el array o null si falla.
 const obtenerProductos = async () => {
     try {
