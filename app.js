@@ -684,12 +684,20 @@ if (paginaActual === "cart") {
  * ============================================================
  *  Páginas donde actúa: producto-*.html (data-pagina="producto").
  *  Qué hace:
- *   - Lee el precio desde data-precio del span .price con Number().
+ *   - Lee el id del producto desde data-id del <body> y hace un GET a
+ *     /rest/v1/productos?id=eq.ID (cargarPrecioProducto) para obtener
+ *     el precio real desde Supabase. Mientras responde, usa como
+ *     respaldo el data-precio del span .price.
  *   - Muestra debajo del input cantidad "Total: $X USD" y lo actualiza
  *     con el evento "input" (corrigiendo entre 1 y 20 con if/else).
- *   - Al enviar "Añadir al Carrito", hace preventDefault y muestra con
- *     createElement + after() el mensaje "✔ Agregaste N × NOMBRE" con
- *     un link "Ir al carrito", reemplazando el anterior si se repite.
+ *   - Al enviar "Añadir al Carrito" (agregarAlCarrito):
+ *       1) GET al carrito y .find() para ver si el producto ya está.
+ *       2) Si no está: POST a /rest/v1/carrito con { producto_id, cantidad }.
+ *       3) Si está: PATCH a /rest/v1/carrito?id=eq.ID sumando la
+ *          cantidad (máximo 20).
+ *     Usa try/catch e if (!res.ok), deshabilita el botón mientras
+ *     espera y muestra "✔ Agregaste N × NOMBRE" con un link "Ir al
+ *     carrito" solo si salió bien, o un mensaje de error si falló.
  * ============================================================
  */
 if (paginaActual === "producto") {
@@ -698,18 +706,25 @@ if (paginaActual === "producto") {
     const formAgregar = document.querySelector(".add-to-cart-form");
     const selectorCantidad = document.querySelector(".quantity-selector");
     const inputCantidad = document.querySelector("#cantidad");
+    const btnAgregar = document.querySelector(".add-to-cart-btn");
+    const idProducto = Number(document.body.dataset.id);
 
     if (
         elementoTituloProducto === null ||
         spanPrecioUnitario === null ||
         formAgregar === null ||
         selectorCantidad === null ||
-        inputCantidad === null
+        inputCantidad === null ||
+        btnAgregar === null ||
+        !idProducto
     ) {
-        console.warn("Faltan elementos esperados en la página de detalle de producto.");
+        console.warn("Faltan elementos esperados (o el data-id del <body>) en la página de detalle de producto.");
     } else {
         const tituloProducto = elementoTituloProducto.textContent;
-        const precioUnitario = Number(spanPrecioUnitario.dataset.precio);
+        const CANTIDAD_MAXIMA = 20;
+
+        // Precio de respaldo (el del HTML) hasta que responda Supabase
+        let precioUnitario = Number(spanPrecioUnitario.dataset.precio);
 
         // Creamos el texto "Total: $X USD" y lo ubicamos debajo del selector de cantidad
         const textoTotal = document.createElement("p");
@@ -738,21 +753,51 @@ if (paginaActual === "producto") {
             actualizarTotalProducto();
         });
 
-        formAgregar.addEventListener("submit", (e) => {
-            e.preventDefault();
+        // GET del producto en Supabase para usar su precio en el total en vivo
+        const cargarPrecioProducto = async () => {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?id=eq.${idProducto}`, {
+                    method: "GET",
+                    headers: headers
+                });
 
-            actualizarTotalProducto();
-            const cantidadElegida = Number(inputCantidad.value);
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al pedir el producto`);
+                }
 
+                const datos = await res.json();
+
+                if (datos.length === 0) {
+                    throw new Error(`No existe el producto con id ${idProducto} en Supabase`);
+                }
+
+                precioUnitario = Number(datos[0].precio);
+                spanPrecioUnitario.dataset.precio = precioUnitario;
+                actualizarTotalProducto();
+            } catch (error) {
+                console.warn("No se pudo leer el precio desde Supabase, se usa el del HTML:", error);
+            }
+        };
+
+        cargarPrecioProducto();
+
+        // Quita el mensaje anterior (de éxito o de error) si existe
+        const quitarMensajeAnterior = () => {
             if (mensajeAgregado !== null) {
                 mensajeAgregado.remove();
+                mensajeAgregado = null;
             }
+        };
+
+        // Muestra "✔ Agregaste N × NOMBRE" con el link "Ir al carrito"
+        const mostrarMensajeExito = (cantidad) => {
+            quitarMensajeAnterior();
 
             mensajeAgregado = document.createElement("div");
             mensajeAgregado.classList.add("added-to-cart-msg");
 
             const spanTexto = document.createElement("span");
-            spanTexto.textContent = `✔ Agregaste ${cantidadElegida} × ${tituloProducto}`;
+            spanTexto.textContent = `✔ Agregaste ${cantidad} × ${tituloProducto}`;
 
             const linkCarrito = document.createElement("a");
             linkCarrito.href = "cart.html";
@@ -761,6 +806,89 @@ if (paginaActual === "producto") {
 
             mensajeAgregado.append(spanTexto, linkCarrito);
             formAgregar.after(mensajeAgregado);
+        };
+
+        // Muestra un mensaje de error debajo del formulario (usa la clase .error-msg existente)
+        const mostrarMensajeError = (texto) => {
+            quitarMensajeAnterior();
+
+            mensajeAgregado = document.createElement("p");
+            mensajeAgregado.classList.add("error-msg");
+            mensajeAgregado.textContent = texto;
+            formAgregar.after(mensajeAgregado);
+        };
+
+        // GET al carrito + .find(); si no está hace POST, si está hace PATCH (máximo 20).
+        // Devuelve la cantidad realmente agregada.
+        const agregarAlCarrito = async (cantidad) => {
+            const resCarrito = await fetch(`${SUPABASE_URL}/rest/v1/carrito?select=*`, {
+                method: "GET",
+                headers: headers
+            });
+
+            if (!resCarrito.ok) {
+                throw new Error(`Error HTTP ${resCarrito.status} al leer el carrito`);
+            }
+
+            const itemsCarrito = await resCarrito.json();
+            const itemExistente = itemsCarrito.find((item) => item.producto_id === idProducto);
+
+            if (itemExistente === undefined) {
+                const resPost = await fetch(`${SUPABASE_URL}/rest/v1/carrito`, {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify({ producto_id: idProducto, cantidad: cantidad })
+                });
+
+                if (!resPost.ok) {
+                    throw new Error(`Error HTTP ${resPost.status} al agregar el producto al carrito`);
+                }
+
+                return cantidad;
+            }
+
+            const cantidadActual = Number(itemExistente.cantidad);
+
+            if (cantidadActual >= CANTIDAD_MAXIMA) {
+                throw new Error(`Ya tenés el máximo de ${CANTIDAD_MAXIMA} unidades de este producto en el carrito.`);
+            }
+
+            const nuevaCantidad = Math.min(cantidadActual + cantidad, CANTIDAD_MAXIMA);
+
+            const resPatch = await fetch(`${SUPABASE_URL}/rest/v1/carrito?id=eq.${itemExistente.id}`, {
+                method: "PATCH",
+                headers: headers,
+                body: JSON.stringify({ cantidad: nuevaCantidad })
+            });
+
+            if (!resPatch.ok) {
+                throw new Error(`Error HTTP ${resPatch.status} al actualizar la cantidad en el carrito`);
+            }
+
+            return nuevaCantidad - cantidadActual;
+        };
+
+        formAgregar.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            actualizarTotalProducto();
+            const cantidadElegida = Number(inputCantidad.value);
+
+            // Deshabilitamos el botón mientras esperamos la respuesta de Supabase
+            btnAgregar.disabled = true;
+
+            try {
+                const cantidadAgregada = await agregarAlCarrito(cantidadElegida);
+                mostrarMensajeExito(cantidadAgregada);
+            } catch (error) {
+                console.error("No se pudo agregar al carrito:", error);
+                const texto = error.message.startsWith("Ya tenés")
+                    ? error.message
+                    : "No se pudo agregar el producto al carrito. Intentá de nuevo más tarde.";
+                mostrarMensajeError(texto);
+            } finally {
+                btnAgregar.disabled = false;
+            }
         });
     }
 }
