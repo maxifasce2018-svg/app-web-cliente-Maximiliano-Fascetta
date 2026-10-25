@@ -75,3 +75,5 @@ cetral y footer, sobre una tienda de cartas.
 37.Quiero crear la rama feature/supabase-fetch y que el catálogo del index se cargue desde Supabase con fetch (GET), mostrando "Cargando..." y un mensaje si falla, sin perder el buscador ni los filtros.
 
 38.Quiero que cada página de producto lea sus datos desde Supabase y que "Añadir al Carrito" guarde el producto en la base de datos (POST), sumando la cantidad con PATCH si ya estaba, y avise si falla.
+
+39.Quiero que el carrito se cargue desde Supabase y que sumar, restar, eliminar y pagar modifiquen la base de datos (PATCH y DELETE), manteniendo el cálculo de subtotal, envío y total.
