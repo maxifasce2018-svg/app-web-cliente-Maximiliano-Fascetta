@@ -79,3 +79,5 @@ cetral y footer, sobre una tienda de cartas.
 39.Quiero que el carrito se cargue desde Supabase y que sumar, restar, eliminar y pagar modifiquen la base de datos (PATCH y DELETE), manteniendo el cálculo de subtotal, envío y total.
 
 40.Quiero que el formulario de contacto guarde el mensaje en Supabase (POST) usando promesas con .then, .catch y .finally, mostrando "Enviando..." y avisando si salió bien o mal.
+
+41.Quiero una revisión final de todo el JS con la conexión a Supabase para que quede ordenado, comentado, sin código innecesario y sin errores.
