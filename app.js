@@ -500,21 +500,28 @@ if (paginaActual === "index") {
  * ============================================================
  *  Página donde actúa: cart.html (data-pagina="cart").
  *  Qué hace:
- *   - Inserta en cada .cart-item los botones "−", "+" y "Eliminar"
- *     usando createElement y append.
+ *   - Hace GET a /rest/v1/carrito?select=*,productos(*)&order=id.asc,
+ *     mostrando "Cargando carrito..." mientras espera y un mensaje
+ *     de error si falla.
+ *   - Crea cada .cart-item con createElement y .map() (incluyendo
+ *     los botones "−", "+" y "Eliminar" con append), guardando
+ *     id, precio y cantidad en data-* mediante dataset.
  *   - Usa UN solo addEventListener "click" en .cart-items (delegación)
  *     detectando el botón con e.target.matches() y el item con closest().
- *   - Mantiene la cantidad entre 1 y 20 con if/else.
+ *   - "+" y "−" hacen PATCH a /rest/v1/carrito?id=eq.ID con
+ *     JSON.stringify({ cantidad }) (entre 1 y 20 con if/else).
+ *   - "Eliminar" hace DELETE a /rest/v1/carrito?id=eq.ID y quita el
+ *     item con remove() solo cuando el servidor respondió bien.
  *   - calcularResumen() usa reduce() con valor inicial 0 para sumar
  *     artículos y subtotal, y un operador ternario para el envío
  *     (0 si subtotal >= 150, 15 si no).
- *   - Al hacer click en "Pagar Ahora" reemplaza .cart-summary con
- *     innerHTML mostrando el total abonado, o console.warn si está vacío.
+ *   - "Pagar Ahora" hace DELETE a /rest/v1/carrito?id=gt.0 y muestra
+ *     el mensaje de compra confirmada con el total abonado, o avisa
+ *     si el carrito está vacío.
  * ============================================================
  */
 if (paginaActual === "cart") {
     const contenedorItems = document.querySelector(".cart-items");
-    const itemsIniciales = document.querySelectorAll(".cart-item");
     const contenedorResumen = document.querySelector(".cart-summary");
     const filasResumen = document.querySelectorAll(".cart-summary .summary-row");
     const btnPagar = document.querySelector(".checkout-btn");
@@ -534,33 +541,96 @@ if (paginaActual === "cart") {
 
         let totalFinalActual = 0;
 
-        // Insertamos en cada .cart-item los botones "−", "+" y "Eliminar"
-        for (const item of itemsIniciales) {
-            const infoItem = item.querySelector(".cart-item-info");
+        // GET de todos los items del carrito con los datos de su producto
+        const obtenerCarrito = async () => {
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/carrito?select=*,productos(*)&order=id.asc`, {
+                    method: "GET",
+                    headers: headers
+                });
 
-            if (infoItem !== null) {
-                const contenedorControles = document.createElement("div");
-                contenedorControles.classList.add("cart-item-controls");
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al pedir el carrito`);
+                }
 
-                const btnRestar = document.createElement("button");
-                btnRestar.type = "button";
-                btnRestar.classList.add("btn-qty", "btn-restar");
-                btnRestar.textContent = "−";
-
-                const btnSumar = document.createElement("button");
-                btnSumar.type = "button";
-                btnSumar.classList.add("btn-qty", "btn-sumar");
-                btnSumar.textContent = "+";
-
-                const btnEliminar = document.createElement("button");
-                btnEliminar.type = "button";
-                btnEliminar.classList.add("btn-remove-item");
-                btnEliminar.textContent = "Eliminar";
-
-                contenedorControles.append(btnRestar, btnSumar, btnEliminar);
-                infoItem.append(contenedorControles);
+                const items = await res.json();
+                return items;
+            } catch (error) {
+                console.error("No se pudo obtener el carrito desde Supabase:", error);
+                return null;
             }
-        }
+        };
+
+        // Crea un <article class="cart-item"> con la misma estructura y clases del diseño
+        const crearItemCarrito = (registro) => {
+            const producto = registro.productos;
+            const precio = Number(producto.precio);
+            const cantidad = Number(registro.cantidad);
+
+            const item = document.createElement("article");
+            item.classList.add("cart-item");
+            item.dataset.id = registro.id;
+            item.dataset.precio = precio;
+            item.dataset.cantidad = cantidad;
+
+            // Imagen
+            const divImagen = document.createElement("div");
+            divImagen.classList.add("cart-item-image");
+
+            const img = document.createElement("img");
+            img.src = producto.imagen_url;
+            img.alt = producto.nombre;
+            divImagen.appendChild(img);
+
+            // Información + botones "−", "+" y "Eliminar"
+            const infoItem = document.createElement("div");
+            infoItem.classList.add("cart-item-info");
+
+            const titulo = document.createElement("h3");
+            titulo.classList.add("cart-item-title");
+            titulo.textContent = producto.nombre;
+
+            const parrafoPrecio = document.createElement("p");
+            parrafoPrecio.classList.add("cart-item-price");
+            parrafoPrecio.textContent = `$${precio} USD`;
+
+            const parrafoCantidad = document.createElement("p");
+            parrafoCantidad.classList.add("cart-item-qty");
+            parrafoCantidad.textContent = `Cantidad: ${cantidad}`;
+
+            const contenedorControles = document.createElement("div");
+            contenedorControles.classList.add("cart-item-controls");
+
+            const btnRestar = document.createElement("button");
+            btnRestar.type = "button";
+            btnRestar.classList.add("btn-qty", "btn-restar");
+            btnRestar.textContent = "−";
+
+            const btnSumar = document.createElement("button");
+            btnSumar.type = "button";
+            btnSumar.classList.add("btn-qty", "btn-sumar");
+            btnSumar.textContent = "+";
+
+            const btnEliminar = document.createElement("button");
+            btnEliminar.type = "button";
+            btnEliminar.classList.add("btn-remove-item");
+            btnEliminar.textContent = "Eliminar";
+
+            contenedorControles.append(btnRestar, btnSumar, btnEliminar);
+            infoItem.append(titulo, parrafoPrecio, parrafoCantidad, contenedorControles);
+
+            // Total del item
+            const divTotal = document.createElement("div");
+            divTotal.classList.add("cart-item-total");
+
+            const spanTotal = document.createElement("span");
+            spanTotal.classList.add("cart-item-total-price");
+            spanTotal.textContent = `$${precio * cantidad} USD`;
+            divTotal.appendChild(spanTotal);
+
+            item.append(divImagen, infoItem, divTotal);
+            return item;
+        };
 
         // Arrow function que recalcula el resumen del carrito con reduce()
         const calcularResumen = () => {
@@ -614,12 +684,12 @@ if (paginaActual === "cart") {
             valorSubtotal.textContent = `$${subtotal} USD`;
             valorEnvio.textContent = costoEnvio === 0 ? "GRATIS" : `$${costoEnvio} USD`;
             valorTotalFinal.textContent = `$${totalFinal} USD`;
+            btnPagar.removeAttribute("disabled");
         };
 
-        // Arrow function reutilizable que actualiza un item del carrito con una nueva cantidad.
-        // Mantiene la cantidad entre 1 y 20 (if/else), guarda el valor en el dataset,
-        // actualiza los textos "Cantidad: N" y el total del item, y recalcula el resumen.
-        const actualizarItem = (item, cantidad) => {
+        // Arrow function async que actualiza la cantidad de un item (entre 1 y 20 con if/else),
+        // hace PATCH a Supabase y actualiza la pantalla solo si el servidor respondió bien.
+        const actualizarItem = async (item, cantidad) => {
             let cantidadFinal = cantidad;
 
             if (cantidadFinal < 1) {
@@ -628,12 +698,54 @@ if (paginaActual === "cart") {
                 cantidadFinal = 20;
             }
 
+            const cantidadActual = Number(item.dataset.cantidad);
+            if (cantidadFinal === cantidadActual) {
+                return;
+            }
+
+            const idItem = Number(item.dataset.id);
             const precio = Number(item.dataset.precio);
 
-            item.dataset.cantidad = cantidadFinal;
-            item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidadFinal}`;
-            item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidadFinal} USD`;
-            calcularResumen();
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/carrito?id=eq.${idItem}`, {
+                    method: "PATCH",
+                    headers: headers,
+                    body: JSON.stringify({ cantidad: cantidadFinal })
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al actualizar la cantidad`);
+                }
+
+                // Actualizamos el DOM y el resumen recién cuando Supabase respondió bien
+                item.dataset.cantidad = cantidadFinal;
+                item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidadFinal}`;
+                item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidadFinal} USD`;
+                calcularResumen();
+            } catch (error) {
+                console.error("No se pudo actualizar la cantidad del item en Supabase:", error);
+            }
+        };
+
+        // Arrow function async que elimina un item en Supabase (DELETE) y lo quita del DOM si salió bien
+        const eliminarItem = async (item) => {
+            const idItem = Number(item.dataset.id);
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/carrito?id=eq.${idItem}`, {
+                    method: "DELETE",
+                    headers: headers
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al eliminar el item`);
+                }
+
+                item.remove();
+                calcularResumen();
+            } catch (error) {
+                console.error("No se pudo eliminar el item del carrito en Supabase:", error);
+            }
         };
 
         // UN solo addEventListener "click" en .cart-items (delegación de eventos)
@@ -652,13 +764,12 @@ if (paginaActual === "cart") {
                 // Sumamos 1 (actualizarItem se encarga de no pasar de 20)
                 actualizarItem(item, cantidad + 1);
             } else if (e.target.matches(".btn-remove-item")) {
-                item.remove();
-                calcularResumen();
+                eliminarItem(item);
             }
         });
 
-        // Evento click en "Pagar Ahora"
-        btnPagar.addEventListener("click", () => {
+        // Evento click en "Pagar Ahora": vacía la tabla carrito con DELETE y confirma la compra
+        btnPagar.addEventListener("click", async () => {
             const itemsActuales = document.querySelectorAll(".cart-item");
 
             if (itemsActuales.length === 0) {
@@ -666,15 +777,61 @@ if (paginaActual === "cart") {
                 return;
             }
 
-            contenedorResumen.innerHTML = `
-                <h2 class="summary-title">¡Compra Confirmada!</h2>
-                <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalFinalActual} USD</p>
-                <a href="index.html" class="continue-shopping">Volver al inicio</a>
-            `;
+            const totalAbonado = totalFinalActual;
+            btnPagar.disabled = true;
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/carrito?id=gt.0`, {
+                    method: "DELETE",
+                    headers: headers
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al vaciar el carrito`);
+                }
+
+                // Actualizamos la vista recién cuando el DELETE respondió bien
+                for (const item of itemsActuales) {
+                    item.remove();
+                }
+                calcularResumen();
+
+                contenedorResumen.innerHTML = `
+                    <h2 class="summary-title">¡Compra Confirmada!</h2>
+                    <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalAbonado} USD</p>
+                    <a href="index.html" class="continue-shopping">Volver al inicio</a>
+                `;
+            } catch (error) {
+                console.error("No se pudo confirmar la compra en Supabase:", error);
+                btnPagar.disabled = false;
+            }
         });
 
-        // Ejecutamos calcularResumen() al cargar la página
-        calcularResumen();
+        // Carga inicial del carrito con mensaje "Cargando carrito..." y manejo de error
+        const mensajeEstadoCarrito = document.createElement("p");
+        mensajeEstadoCarrito.textContent = "Cargando carrito...";
+        contenedorItems.appendChild(mensajeEstadoCarrito);
+
+        const cargarCarrito = async () => {
+            const registros = await obtenerCarrito();
+
+            if (registros === null) {
+                mensajeEstadoCarrito.textContent = "No se pudo cargar el carrito. Por favor, intentá de nuevo más tarde.";
+                btnPagar.setAttribute("disabled", "");
+                return;
+            }
+
+            mensajeEstadoCarrito.remove();
+
+            if (registros.length > 0) {
+                const elementosCarrito = registros.map((registro) => crearItemCarrito(registro));
+                contenedorItems.append(...elementosCarrito);
+            }
+
+            calcularResumen();
+        };
+
+        cargarCarrito();
     }
 }
 
