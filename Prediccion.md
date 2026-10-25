@@ -71,3 +71,5 @@ cetral y footer, sobre una tienda de cartas.
 35.Quiero que el menú mobile y los filtros se cierren solos, y que el link de la página actual se resalte en el menú.
 
 36. Quiero una revisión final de todo el JS para que quede ordenado, comentado y sin errores.
+
+37.Quiero crear la rama feature/supabase-fetch y que el catálogo del index se cargue desde Supabase con fetch (GET), mostrando "Cargando..." y un mensaje si falla, sin perder el buscador ni los filtros.
