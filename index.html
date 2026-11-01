@@ -24,6 +24,12 @@
     <script src="app.js" defer></script>
 </head>
 <body data-pagina="index">
+    <!-- Banner de aviso: se cierra con la "x" y no vuelve a mostrarse (localStorage "bannerOculto") -->
+    <div class="banner-aviso" id="banner-aviso" role="region" aria-label="Aviso de la tienda">
+        <p class="banner-aviso-texto">🎴 ¡Nuevo ingreso! Ya están disponibles las últimas Booster Boxes y Elite Trainer Boxes.</p>
+        <button type="button" id="btn-cerrar-banner" class="btn-cerrar-banner" aria-label="Cerrar aviso" title="Cerrar aviso">×</button>
+    </div>
+
     <div class="announcement-bar">
         🚀 ¡Envío GRATIS en compras mayores a $150 USD! | 📦 Despacho en 24-48hs
     </div>

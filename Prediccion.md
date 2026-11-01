@@ -85,3 +85,5 @@ cetral y footer, sobre una tienda de cartas.
 42.Quiero agregar modo claro/oscuro guardado en localStorage.
 
 43.Quiero que el carrito persista con localStorage y JSON, con contador en el header.
+
+44.Quiero un banner cerrable (localStorage) y un borrador del formulario de contacto (sessionStorage).
