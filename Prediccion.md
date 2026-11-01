@@ -83,3 +83,5 @@ cetral y footer, sobre una tienda de cartas.
 41.Quiero una revisión final de todo el JS con la conexión a Supabase para que quede ordenado, comentado, sin código innecesario y sin errores.
 
 42.Quiero agregar modo claro/oscuro guardado en localStorage.
+
+43.Quiero que el carrito persista con localStorage y JSON, con contador en el header.
