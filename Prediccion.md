@@ -87,3 +87,5 @@ cetral y footer, sobre una tienda de cartas.
 43.Quiero que el carrito persista con localStorage y JSON, con contador en el header.
 
 44.Quiero un banner cerrable (localStorage) y un borrador del formulario de contacto (sessionStorage).
+
+45.Quiero un archivo nuevo vender.html, estilos nuevos, una sección nueva en app.js con un POST a productos, un filtro estado=eq.aprobado en obtenerProductos y un link "Vender" en todos los menús.
