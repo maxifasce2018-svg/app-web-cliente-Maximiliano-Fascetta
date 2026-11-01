@@ -29,6 +29,7 @@
    25. Responsive (TODOS los media queries unificados)
    28. Botón de cambio de tema (claro / oscuro)
    29. Contador del carrito y aviso discreto
+   30. Banner de aviso de la tienda (index.html)
    ================================================================ */
 
 
@@ -2243,4 +2244,56 @@ a:hover {
     color: var(--color-text-secondary);
     font-size: 0.85rem;
     margin-bottom: 10px;
+}
+
+/* ==========================================================
+   30. BANNER DE AVISO DE LA TIENDA (index.html)
+   ========================================================== */
+/* Usa solo variables de la paleta, así se ve bien en modo claro y oscuro */
+.banner-aviso {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    position: relative;
+    padding: 10px 50px;
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-text-heading);
+    border-bottom: 2px solid var(--color-accent);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* La clase .oculto (display:none) se pisaría con display:flex, por eso se refuerza acá */
+.banner-aviso.oculto {
+    display: none;
+}
+
+.btn-cerrar-banner {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    background: transparent;
+    color: var(--color-text-heading);
+    border: 1px solid var(--color-border-light);
+    border-radius: 50%;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+.btn-cerrar-banner:hover {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #ffffff;
+}
+
+.btn-cerrar-banner:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
 }

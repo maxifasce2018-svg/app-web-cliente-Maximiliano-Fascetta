@@ -26,10 +26,11 @@
  *   8. Validación del formulario de registro (registro.html)
  *   9. Formulario de inicio de sesión (login.html)
  *  10. Formulario de recuperar contraseña (recuperar-password.html)
- *  11. Formulario de contacto con Supabase y contador de caracteres (contacto.html)
+ *  11. Formulario de contacto con Supabase, contador de caracteres y borrador en sessionStorage (contacto.html)
  *  12. Acordeones exclusivos <details> en FAQ y productos (contacto.html y producto-*.html)
  *  13. Mejoras de navegación: menú mobile, click afuera en filtros y link activo (Todas las páginas)
  *  14. Tema claro / oscuro persistente con localStorage (Todas las páginas)
+ *  15. Banner de aviso que se cierra y se recuerda con localStorage (index.html)
  *
  * ============================================================
  */
@@ -1489,6 +1490,12 @@ if (paginaActual === "recuperar") {
  *     botón "Enviar otro mensaje" que limpia los campos (.value = "")
  *     y vuelve a mostrar el formulario.
  *   - Si falla, muestra un mensaje de error sin ocultar el formulario.
+ *   - Borrador con sessionStorage: mientras el usuario escribe (evento
+ *     "input") guarda { nombre, motivo, mensaje } con JSON.stringify
+ *     bajo la clave "borradorContacto". Al cargar la página lo
+ *     recupera con JSON.parse y rellena los campos. NO guarda el
+ *     email, el teléfono ni ningún otro dato sensible. Si el envío
+ *     sale bien, lo borra con removeItem. Todo va en try/catch.
  * ============================================================
  */
 if (paginaActual === "contacto") {
@@ -1523,6 +1530,71 @@ if (paginaActual === "contacto") {
             contadorCaracteres.textContent = `${cantidadCaracteres} / 500 caracteres`;
             contadorCaracteres.classList.toggle("char-limit-warn", cantidadCaracteres > 450);
         });
+
+        // ---- Borrador del formulario en sessionStorage (solo nombre, motivo y mensaje) ----
+        const CLAVE_BORRADOR = "borradorContacto";
+
+        // Guarda el borrador actual; si sessionStorage falla, solo avisa por consola
+        const guardarBorradorContacto = () => {
+            try {
+                const borrador = {
+                    nombre: inputNombreContacto.value,
+                    motivo: selectMotivoContacto.value,
+                    mensaje: textareaMensaje.value
+                };
+                sessionStorage.setItem(CLAVE_BORRADOR, JSON.stringify(borrador));
+            } catch (error) {
+                console.warn("sessionStorage no está disponible, no se guardará el borrador.", error);
+            }
+        };
+
+        // Borra el borrador (se usa cuando el mensaje se envió bien)
+        const borrarBorradorContacto = () => {
+            try {
+                sessionStorage.removeItem(CLAVE_BORRADOR);
+            } catch (error) {
+                console.warn("sessionStorage no está disponible, no se pudo borrar el borrador.", error);
+            }
+        };
+
+        // Recupera el borrador con JSON.parse y rellena los campos
+        const restaurarBorradorContacto = () => {
+            try {
+                const texto = sessionStorage.getItem(CLAVE_BORRADOR);
+                if (texto === null) {
+                    return;
+                }
+
+                const borrador = JSON.parse(texto);
+                if (borrador === null || typeof borrador !== "object") {
+                    return;
+                }
+
+                if (typeof borrador.nombre === "string") {
+                    inputNombreContacto.value = borrador.nombre;
+                }
+                if (typeof borrador.motivo === "string") {
+                    selectMotivoContacto.value = borrador.motivo;
+                }
+                if (typeof borrador.mensaje === "string") {
+                    textareaMensaje.value = borrador.mensaje.slice(0, 500);
+                }
+
+                // Actualizamos el contador de caracteres con el mensaje restaurado
+                const cantidadRestaurada = textareaMensaje.value.length;
+                contadorCaracteres.textContent = `${cantidadRestaurada} / 500 caracteres`;
+                contadorCaracteres.classList.toggle("char-limit-warn", cantidadRestaurada > 450);
+            } catch (error) {
+                console.warn("El borrador guardado está dañado, se ignora.", error);
+            }
+        };
+
+        restaurarBorradorContacto();
+
+        // Guardamos mientras el usuario escribe (el select dispara "input" al cambiar)
+        inputNombreContacto.addEventListener("input", guardarBorradorContacto);
+        selectMotivoContacto.addEventListener("input", guardarBorradorContacto);
+        textareaMensaje.addEventListener("input", guardarBorradorContacto);
 
         let bloqueExitoContacto = null;
         let mensajeErrorContacto = null;
@@ -1562,6 +1634,9 @@ if (paginaActual === "contacto") {
                     if (!res.ok) {
                         throw new Error(`Error HTTP ${res.status} al guardar el mensaje de contacto`);
                     }
+
+                    // El mensaje se envió bien: ya no hace falta el borrador
+                    borrarBorradorContacto();
 
                     formContacto.classList.add("oculto");
 
@@ -1791,4 +1866,49 @@ if (botonTema === null) {
         guardarTema(esClaro ? "claro" : "oscuro");
         actualizarBotonTema(esClaro);
     });
+}
+
+/*
+ * ============================================================
+ *  15. BANNER DE AVISO CON localStorage (index.html)
+ * ============================================================
+ *  Página donde actúa: index.html (data-pagina="index").
+ *  Qué hace:
+ *   1) Al cargar, si localStorage.getItem("bannerOculto") vale
+ *      "true", oculta el banner (#banner-aviso) con la clase
+ *      .oculto; si no, queda visible.
+ *   2) Al hacer click en la "x" (#btn-cerrar-banner) oculta el
+ *      banner y guarda localStorage.setItem("bannerOculto", "true").
+ *   3) El acceso a localStorage va en try/catch: si no está
+ *      disponible, el banner igual se cierra pero reaparece al
+ *      recargar. No se usan cookies.
+ * ============================================================
+ */
+if (paginaActual === "index") {
+    const bannerAviso = document.querySelector("#banner-aviso");
+    const btnCerrarBanner = document.querySelector("#btn-cerrar-banner");
+
+    if (bannerAviso === null || btnCerrarBanner === null) {
+        console.warn("No se encontró el banner de aviso en index.html.");
+    } else {
+        // 1) Si el usuario ya lo cerró antes, no lo mostramos
+        try {
+            if (localStorage.getItem("bannerOculto") === "true") {
+                bannerAviso.classList.add("oculto");
+            }
+        } catch (error) {
+            console.warn("localStorage no está disponible, no se puede leer bannerOculto.", error);
+        }
+
+        // 2) Al cerrar, lo ocultamos y recordamos la decisión
+        btnCerrarBanner.addEventListener("click", () => {
+            bannerAviso.classList.add("oculto");
+
+            try {
+                localStorage.setItem("bannerOculto", "true");
+            } catch (error) {
+                console.warn("localStorage no está disponible, el banner volverá a aparecer.", error);
+            }
+        });
+    }
 }
