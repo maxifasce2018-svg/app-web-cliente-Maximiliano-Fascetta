@@ -27,6 +27,8 @@
    23. Footer
    24. Accessibility
    25. Responsive (TODOS los media queries unificados)
+   28. Botón de cambio de tema (claro / oscuro)
+   29. Contador del carrito y aviso discreto
    ================================================================ */
 
 
@@ -2217,4 +2219,28 @@ a:hover {
         padding: 6px 10px;
         font-size: 0.8rem;
     }
+}
+
+/* ==========================================================
+   29. CONTADOR DEL CARRITO Y AVISO DISCRETO
+   ========================================================== */
+/* Globito con la cantidad de productos; app.js lo completa leyendo localStorage */
+.cart-counter {
+    display: inline-block;
+    min-width: 20px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background-color: var(--color-accent);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+}
+
+/* Aviso chico que se muestra si no se pudo actualizar el carrito desde Supabase */
+.aviso-carrito {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: 10px;
 }

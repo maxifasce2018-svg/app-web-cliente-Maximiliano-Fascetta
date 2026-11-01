@@ -16,6 +16,7 @@
  *
  *  ÍNDICE DE SECCIONES DEL ARCHIVO:
  *   1. Inicialización, página actual y configuración de Supabase (Todas las páginas)
+ *   1b. Copia local del carrito en localStorage y contador del header (Todas las páginas)
  *   2. Catálogo desde Supabase con fetch y lectura de datos data-* (index.html)
  *   3. Buscador en tiempo real y sistema de filtros (index.html)
  *   4. Enlaces del menú de navegación con switch (index.html)
@@ -63,6 +64,123 @@ const headers = {
     apikey: SUPABASE_KEY,
     Authorization: `Bearer ${SUPABASE_KEY}`
 };
+
+/*
+ * ============================================================
+ *  1b. COPIA LOCAL DEL CARRITO (localStorage) Y CONTADOR DEL HEADER
+ * ============================================================
+ *  Páginas donde actúa: TODAS.
+ *  Qué hace:
+ *   - guardarCarritoLocal(items): guarda en localStorage, con la
+ *     clave "carrito", un array de objetos con JSON.stringify y
+ *     refresca el contador del header.
+ *   - leerCarritoLocal(): recupera el array con JSON.parse dentro
+ *     de try/catch y devuelve [] si no existe o está corrupto.
+ *   - actualizarContadorCarrito(): suma las cantidades de la copia
+ *     local y las muestra en todos los [data-contador-carrito].
+ *   - sincronizarCarritoLocal(): pide el carrito a Supabase (la
+ *     fuente de verdad) y reemplaza la copia local con esos datos.
+ *   - Cada item local tiene SOLO datos del producto, sin datos
+ *     personales: { id, producto_id, cantidad, precio, nombre,
+ *     imagen_url }. El nombre y la imagen se guardan solo para poder
+ *     pintar el carrito al instante; no son datos sensibles.
+ *   - No se usan cookies. Supabase sigue mandando: la copia local
+ *     se pisa siempre que llegan datos reales.
+ * ============================================================
+ */
+const CLAVE_CARRITO = "carrito";
+
+// Guarda el array de items en localStorage y actualiza el contador
+const guardarCarritoLocal = (items) => {
+    try {
+        localStorage.setItem(CLAVE_CARRITO, JSON.stringify(items));
+    } catch (error) {
+        console.warn("localStorage no está disponible, el carrito no se guardará localmente.", error);
+    }
+    actualizarContadorCarrito();
+};
+
+// Lee el array de items; devuelve [] si no existe, está corrupto o no es un array válido
+const leerCarritoLocal = () => {
+    try {
+        const texto = localStorage.getItem(CLAVE_CARRITO);
+        if (texto === null) {
+            return [];
+        }
+
+        const datos = JSON.parse(texto);
+        if (!Array.isArray(datos)) {
+            return [];
+        }
+
+        // Descartamos entradas que no tengan los campos numéricos mínimos
+        return datos.filter((item) => {
+            return item !== null &&
+                typeof item === "object" &&
+                Number.isFinite(Number(item.id)) &&
+                Number.isFinite(Number(item.cantidad)) &&
+                Number.isFinite(Number(item.precio));
+        });
+    } catch (error) {
+        console.warn("La copia local del carrito no se pudo leer, se ignora.", error);
+        return [];
+    }
+};
+
+// Convierte los registros de Supabase (carrito + productos) al formato liviano de la copia local
+const registrosACarritoLocal = (registros) => {
+    return registros.map((registro) => {
+        return {
+            id: registro.id,
+            producto_id: registro.producto_id,
+            cantidad: Number(registro.cantidad),
+            precio: Number(registro.productos.precio),
+            nombre: registro.productos.nombre,
+            imagen_url: registro.productos.imagen_url
+        };
+    });
+};
+
+// Muestra en el header la cantidad total de productos (suma de cantidades) leída de localStorage
+const actualizarContadorCarrito = () => {
+    const total = leerCarritoLocal().reduce((acumulador, item) => {
+        return acumulador + Number(item.cantidad);
+    }, 0);
+
+    document.querySelectorAll("[data-contador-carrito]").forEach((contador) => {
+        contador.textContent = total;
+    });
+};
+
+// Pide el carrito a Supabase y reemplaza la copia local con los datos reales.
+// Devuelve true si se pudo sincronizar y false si falló (en ese caso no toca lo local).
+const sincronizarCarritoLocal = async () => {
+    try {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/carrito?select=*,productos(*)&order=id.asc`, {
+            method: "GET",
+            headers: headers
+        });
+
+        if (!res.ok) {
+            throw new Error(`Error HTTP ${res.status} al sincronizar el carrito`);
+        }
+
+        const registros = await res.json();
+        guardarCarritoLocal(registrosACarritoLocal(registros));
+        return true;
+    } catch (error) {
+        console.warn("No se pudo sincronizar la copia local del carrito:", error);
+        return false;
+    }
+};
+
+// Contador al cargar la página y también cuando otra pestaña cambia el carrito
+actualizarContadorCarrito();
+window.addEventListener("storage", (e) => {
+    if (e.key === CLAVE_CARRITO) {
+        actualizarContadorCarrito();
+    }
+});
 
 /*
  * ============================================================
@@ -522,6 +640,13 @@ if (paginaActual === "index") {
  *   - "Pagar Ahora" hace DELETE a /rest/v1/carrito?id=gt.0 y muestra
  *     el mensaje de compra confirmada con el total abonado, o avisa
  *     si el carrito está vacío.
+ *   - Copia local: al abrir, pinta primero los items de
+ *     leerCarritoLocal() para que se vean al instante; luego hace el
+ *     GET a Supabase y reemplaza la vista y la copia local con los
+ *     datos reales. Si el fetch falla, deja lo local y muestra un
+ *     aviso discreto. Cambiar cantidad, eliminar y pagar mantienen
+ *     la copia local sincronizada (solo después de que Supabase
+ *     responde bien).
  * ============================================================
  */
 if (paginaActual === "cart") {
@@ -574,6 +699,7 @@ if (paginaActual === "cart") {
             const item = document.createElement("article");
             item.classList.add("cart-item");
             item.dataset.id = registro.id;
+            item.dataset.productoId = registro.producto_id;
             item.dataset.precio = precio;
             item.dataset.cantidad = cantidad;
 
@@ -634,6 +760,22 @@ if (paginaActual === "cart") {
 
             item.append(divImagen, infoItem, divTotal);
             return item;
+        };
+
+        // Arma la copia local a partir de los items que se ven en pantalla y la guarda
+        const guardarCopiaDesdeVista = () => {
+            const itemsVista = Array.from(document.querySelectorAll(".cart-item")).map((item) => {
+                return {
+                    id: Number(item.dataset.id),
+                    producto_id: Number(item.dataset.productoId),
+                    cantidad: Number(item.dataset.cantidad),
+                    precio: Number(item.dataset.precio),
+                    nombre: item.querySelector(".cart-item-title").textContent,
+                    imagen_url: item.querySelector("img").getAttribute("src")
+                };
+            });
+
+            guardarCarritoLocal(itemsVista);
         };
 
         // Arrow function que recalcula el resumen del carrito con reduce()
@@ -726,6 +868,7 @@ if (paginaActual === "cart") {
                 item.querySelector(".cart-item-qty").textContent = `Cantidad: ${cantidadFinal}`;
                 item.querySelector(".cart-item-total-price").textContent = `$${precio * cantidadFinal} USD`;
                 calcularResumen();
+                guardarCopiaDesdeVista();
             } catch (error) {
                 console.error("No se pudo actualizar la cantidad del item en Supabase:", error);
             }
@@ -747,6 +890,7 @@ if (paginaActual === "cart") {
 
                 item.remove();
                 calcularResumen();
+                guardarCopiaDesdeVista();
             } catch (error) {
                 console.error("No se pudo eliminar el item del carrito en Supabase:", error);
             }
@@ -799,6 +943,7 @@ if (paginaActual === "cart") {
                     item.remove();
                 }
                 calcularResumen();
+                guardarCarritoLocal([]); // El carrito quedó vacío también en la copia local
 
                 contenedorResumen.innerHTML = `
                     <h2 class="summary-title">¡Compra Confirmada!</h2>
@@ -811,21 +956,24 @@ if (paginaActual === "cart") {
             }
         });
 
-        // Carga inicial del carrito con mensaje "Cargando carrito..." y manejo de error
-        const mensajeEstadoCarrito = document.createElement("p");
-        mensajeEstadoCarrito.textContent = "Cargando carrito...";
-        contenedorItems.appendChild(mensajeEstadoCarrito);
+        // Convierte un item de la copia local al formato de registro que espera crearItemCarrito
+        const localARegistro = (itemLocal) => {
+            return {
+                id: itemLocal.id,
+                producto_id: itemLocal.producto_id,
+                cantidad: itemLocal.cantidad,
+                productos: {
+                    id: itemLocal.producto_id,
+                    nombre: itemLocal.nombre,
+                    precio: itemLocal.precio,
+                    imagen_url: itemLocal.imagen_url
+                }
+            };
+        };
 
-        const cargarCarrito = async () => {
-            const registros = await obtenerCarrito();
-
-            if (registros === null) {
-                mensajeEstadoCarrito.textContent = "No se pudo cargar el carrito. Por favor, intentá de nuevo más tarde.";
-                btnPagar.setAttribute("disabled", "");
-                return;
-            }
-
-            mensajeEstadoCarrito.remove();
+        // Reemplaza todo lo que hay en .cart-items por los registros recibidos
+        const pintarItems = (registros) => {
+            contenedorItems.innerHTML = "";
 
             if (registros.length > 0) {
                 const elementosCarrito = registros.map((registro) => crearItemCarrito(registro));
@@ -833,6 +981,40 @@ if (paginaActual === "cart") {
             }
 
             calcularResumen();
+        };
+
+        // Carga inicial: 1) pinta la copia local al instante, 2) GET a Supabase y reemplaza vista y copia
+        const copiaLocal = leerCarritoLocal();
+
+        const mensajeEstadoCarrito = document.createElement("p");
+        mensajeEstadoCarrito.textContent = "Cargando carrito...";
+
+        if (copiaLocal.length > 0) {
+            pintarItems(copiaLocal.map((itemLocal) => localARegistro(itemLocal)));
+        } else {
+            contenedorItems.appendChild(mensajeEstadoCarrito);
+        }
+
+        const cargarCarrito = async () => {
+            const registros = await obtenerCarrito();
+
+            if (registros === null) {
+                if (copiaLocal.length > 0) {
+                    // Dejamos lo local y avisamos de forma discreta
+                    const aviso = document.createElement("p");
+                    aviso.classList.add("aviso-carrito");
+                    aviso.textContent = "No se pudo actualizar el carrito. Mostrando la última copia guardada.";
+                    contenedorItems.prepend(aviso);
+                } else {
+                    mensajeEstadoCarrito.textContent = "No se pudo cargar el carrito. Por favor, intentá de nuevo más tarde.";
+                    btnPagar.setAttribute("disabled", "");
+                }
+                return;
+            }
+
+            // Supabase es la fuente de verdad: reemplazamos la vista y la copia local
+            pintarItems(registros);
+            guardarCarritoLocal(registrosACarritoLocal(registros));
         };
 
         cargarCarrito();
@@ -859,6 +1041,9 @@ if (paginaActual === "cart") {
  *     Usa try/catch e if (!res.ok), deshabilita el botón mientras
  *     espera y muestra "✔ Agregaste N × NOMBRE" con un link "Ir al
  *     carrito" solo si salió bien, o un mensaje de error si falló.
+ *   - Después de que Supabase responde bien, actualiza también la
+ *     copia local (sincronizarCarritoLocal) y con ella el contador
+ *     del header.
  * ============================================================
  */
 if (paginaActual === "producto") {
@@ -1040,6 +1225,10 @@ if (paginaActual === "producto") {
 
             try {
                 const cantidadAgregada = await agregarAlCarrito(cantidadElegida);
+
+                // Supabase respondió bien: actualizamos también la copia local (y el contador del header)
+                await sincronizarCarritoLocal();
+
                 mostrarMensajeExito(cantidadAgregada);
             } catch (error) {
                 console.error("No se pudo agregar al carrito:", error);
