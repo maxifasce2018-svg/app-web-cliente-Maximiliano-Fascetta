@@ -81,3 +81,5 @@ cetral y footer, sobre una tienda de cartas.
 40.Quiero que el formulario de contacto guarde el mensaje en Supabase (POST) usando promesas con .then, .catch y .finally, mostrando "Enviando..." y avisando si salió bien o mal.
 
 41.Quiero una revisión final de todo el JS con la conexión a Supabase para que quede ordenado, comentado, sin código innecesario y sin errores.
+
+42.Quiero agregar modo claro/oscuro guardado en localStorage.

@@ -28,6 +28,7 @@
  *  11. Formulario de contacto con Supabase y contador de caracteres (contacto.html)
  *  12. Acordeones exclusivos <details> en FAQ y productos (contacto.html y producto-*.html)
  *  13. Mejoras de navegación: menú mobile, click afuera en filtros y link activo (Todas las páginas)
+ *  14. Tema claro / oscuro persistente con localStorage (Todas las páginas)
  *
  * ============================================================
  */
@@ -1537,4 +1538,68 @@ if (paginaActual === "index") {
             }
         });
     }
+}
+
+/*
+ * ============================================================
+ *  14. TEMA CLARO / OSCURO PERSISTENTE (TODAS LAS PÁGINAS)
+ * ============================================================
+ *  Páginas donde actúa: TODAS.
+ *  Qué hace:
+ *   1) Al cargar, lee localStorage.getItem("tema") y, si vale
+ *      "claro", agrega la clase .tema-claro al <body>. Si no hay
+ *      valor guardado, queda el tema oscuro por defecto.
+ *   2) Al hacer click en #btn-tema alterna la clase con
+ *      classList.toggle, guarda el tema con setItem y actualiza
+ *      el texto/icono del botón.
+ *   3) Todo el acceso a localStorage va dentro de try/catch por
+ *      si no está disponible (modo privado, bloqueado, etc.): en
+ *      ese caso el cambio de tema igual funciona, solo que no se
+ *      recuerda al recargar. No se usan cookies.
+ * ============================================================
+ */
+const botonTema = document.querySelector("#btn-tema");
+
+// Lee el tema guardado; devuelve null si no hay nada o si localStorage falla
+const leerTemaGuardado = () => {
+    try {
+        return localStorage.getItem("tema");
+    } catch (error) {
+        console.warn("localStorage no está disponible, no se puede leer el tema.", error);
+        return null;
+    }
+};
+
+// Guarda el tema elegido; si localStorage falla, solo avisa por consola
+const guardarTema = (tema) => {
+    try {
+        localStorage.setItem("tema", tema);
+    } catch (error) {
+        console.warn("localStorage no está disponible, el tema no se guardará.", error);
+    }
+};
+
+// Muestra en el botón la acción que hará el próximo click
+const actualizarBotonTema = (esClaro) => {
+    if (botonTema === null) {
+        return;
+    }
+    botonTema.textContent = esClaro ? "🌙 Modo oscuro" : "☀️ Modo claro";
+    botonTema.setAttribute("aria-pressed", String(esClaro));
+};
+
+// 1) Aplicar el tema guardado apenas carga la página
+const temaClaroActivo = leerTemaGuardado() === "claro";
+document.body.classList.toggle("tema-claro", temaClaroActivo);
+actualizarBotonTema(temaClaroActivo);
+
+// 2) Alternar el tema al hacer click en el botón
+if (botonTema === null) {
+    console.warn("No se encontró el botón #btn-tema en esta página.");
+} else {
+    botonTema.addEventListener("click", () => {
+        const esClaro = document.body.classList.toggle("tema-claro");
+        guardarTema(esClaro ? "claro" : "oscuro");
+        actualizarBotonTema(esClaro);
+    });
 }
