@@ -31,6 +31,7 @@
  *  13. Mejoras de navegación: menú mobile, click afuera en filtros y link activo (Todas las páginas)
  *  14. Tema claro / oscuro persistente con localStorage (Todas las páginas)
  *  15. Banner de aviso que se cierra y se recuerda con localStorage (index.html)
+ *  16. Panel de administrador oculto con contraseña para añadir y eliminar productos (admin.html)
  *
  * ============================================================
  */
@@ -1912,3 +1913,372 @@ if (paginaActual === "index") {
         });
     }
 }
+
+/*
+ * ============================================================
+ *  16. PANEL DE ADMINISTRADOR OCULTO (admin.html)
+ * ============================================================
+ *  Página donde actúa: admin.html (data-pagina="admin").
+ *  Qué hace:
+ *   - Inicia dentro de document.addEventListener("DOMContentLoaded")
+ *     y selecciona los contenedores principales con getElementById().
+ *   - Valida en pantalla la contraseña contra CLAVE_ADMIN ("Pipi1234")
+ *     con comparación estricta (===). Por seguridad (regla de XSS vista
+ *     en clase), NO guarda la contraseña ni ningún token en localStorage
+ *     ni sessionStorage.
+ *   - Mientras el admin escribe (evento "input"), guarda un borrador de
+ *     los datos del producto en sessionStorage ("borradorProducto") con
+ *     JSON.stringify y lo restaura al abrir con JSON.parse y ?? dentro
+ *     de try/catch.
+ *   - Al enviar el formulario, valida los campos con .trim() y
+ *     Number(precio) > 0, y hace POST a /rest/v1/productos usando
+ *     fetch con async/await, try/catch/finally, las cabeceras estándar
+ *     (headers) y JSON.stringify.
+ *   - Debajo muestra la lista actual de productos en Supabase con GET
+ *     y permite borrar productos con DELETE (usando delegación de
+ *     eventos con closest() y classList.contains()).
+ * ============================================================
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    if (paginaActual !== "admin") {
+        return;
+    }
+
+    const CLAVE_ADMIN = "Pipi1234";
+    const CLAVE_BORRADOR_PRODUCTO = "borradorProducto";
+
+    const tarjetaBloqueo = document.getElementById("admin-lock-card");
+    const formAccesoAdmin = document.getElementById("form-admin-login");
+    const inputPasswordAdmin = document.getElementById("admin-password");
+    const panelAdmin = document.getElementById("admin-panel");
+
+    const formProducto = document.getElementById("form-admin-producto");
+    const inputNombreProd = document.getElementById("prod-nombre");
+    const selectCategoriaProd = document.getElementById("prod-categoria");
+    const selectColeccionProd = document.getElementById("prod-coleccion");
+    const inputPrecioProd = document.getElementById("prod-precio");
+    const selectBadgeProd = document.getElementById("prod-badge");
+    const inputImagenProd = document.getElementById("prod-imagen");
+    const textareaDescProd = document.getElementById("prod-descripcion");
+    const btnGuardarProd = document.getElementById("btn-guardar-producto");
+    const contenedorListaAdmin = document.getElementById("admin-lista-productos");
+
+    if (
+        tarjetaBloqueo === null ||
+        formAccesoAdmin === null ||
+        inputPasswordAdmin === null ||
+        panelAdmin === null ||
+        formProducto === null ||
+        inputNombreProd === null ||
+        selectCategoriaProd === null ||
+        selectColeccionProd === null ||
+        inputPrecioProd === null ||
+        selectBadgeProd === null ||
+        inputImagenProd === null ||
+        textareaDescProd === null ||
+        btnGuardarProd === null ||
+        contenedorListaAdmin === null
+    ) {
+        console.warn("Faltan elementos esperados en admin.html.");
+        return;
+    }
+
+    // ---- 1) Contador de caracteres en vivo para la descripción (máx 300) ----
+    const contadorDescProd = document.createElement("span");
+    contadorDescProd.classList.add("char-counter");
+    contadorDescProd.textContent = `${textareaDescProd.value.length} / 300 caracteres`;
+    textareaDescProd.after(contadorDescProd);
+
+    const actualizarContadorDesc = () => {
+        const largo = textareaDescProd.value.length;
+        contadorDescProd.textContent = `${largo} / 300 caracteres`;
+        contadorDescProd.classList.toggle("char-limit-warn", largo > 260);
+    };
+
+    textareaDescProd.addEventListener("input", actualizarContadorDesc);
+
+    // ---- 2) Borrador del producto en sessionStorage (sin datos sensibles) ----
+    const guardarBorradorProducto = () => {
+        try {
+            const borrador = {
+                nombre: inputNombreProd.value,
+                categoria: selectCategoriaProd.value,
+                coleccion: selectColeccionProd.value,
+                precio: inputPrecioProd.value,
+                badge: selectBadgeProd.value,
+                imagen_url: inputImagenProd.value,
+                descripcion: textareaDescProd.value
+            };
+            sessionStorage.setItem(CLAVE_BORRADOR_PRODUCTO, JSON.stringify(borrador));
+        } catch (error) {
+            console.warn("sessionStorage no está disponible, no se guardará el borrador del producto.", error);
+        }
+    };
+
+    const borrarBorradorProducto = () => {
+        try {
+            sessionStorage.removeItem(CLAVE_BORRADOR_PRODUCTO);
+        } catch (error) {
+            console.warn("sessionStorage no está disponible, no se pudo borrar el borrador del producto.", error);
+        }
+    };
+
+    const restaurarBorradorProducto = () => {
+        try {
+            const texto = sessionStorage.getItem(CLAVE_BORRADOR_PRODUCTO);
+            if (texto === null) {
+                return;
+            }
+
+            const borrador = JSON.parse(texto);
+            if (borrador === null) {
+                return;
+            }
+
+            inputNombreProd.value = borrador.nombre ?? "";
+            selectCategoriaProd.value = borrador.categoria ?? "";
+            selectColeccionProd.value = borrador.coleccion ?? "";
+            inputPrecioProd.value = borrador.precio ?? "";
+            selectBadgeProd.value = borrador.badge ?? "";
+            inputImagenProd.value = borrador.imagen_url ?? "";
+            textareaDescProd.value = borrador.descripcion ?? "";
+            actualizarContadorDesc();
+        } catch (error) {
+            console.warn("El borrador del producto está dañado, se ignora.", error);
+        }
+    };
+
+    const camposBorrador = [
+        inputNombreProd,
+        selectCategoriaProd,
+        selectColeccionProd,
+        inputPrecioProd,
+        selectBadgeProd,
+        inputImagenProd,
+        textareaDescProd
+    ];
+
+    camposBorrador.forEach((campo) => {
+        campo.addEventListener("input", guardarBorradorProducto);
+    });
+
+    // ---- 3) Listado de productos actuales en Supabase (GET y DELETE) ----
+    const crearFilaProductoAdmin = (producto) => {
+        const fila = document.createElement("article");
+        fila.classList.add("admin-product-item");
+        fila.dataset.id = producto.id;
+
+        const info = document.createElement("div");
+        info.classList.add("admin-product-info");
+
+        const miniatura = document.createElement("img");
+        miniatura.classList.add("admin-product-thumb");
+        miniatura.src = producto.imagen_url;
+        miniatura.alt = producto.nombre;
+        info.appendChild(miniatura);
+
+        const textos = document.createElement("div");
+
+        const titulo = document.createElement("h3");
+        titulo.classList.add("admin-product-title");
+        titulo.textContent = producto.nombre;
+
+        const etiquetaBadge = producto.badge ?? "sin badge";
+        const meta = document.createElement("p");
+        meta.classList.add("admin-product-meta");
+        meta.textContent = `ID #${producto.id} · $${producto.precio} USD · ${producto.categoria} · ${producto.coleccion} (${etiquetaBadge})`;
+
+        textos.append(titulo, meta);
+        info.appendChild(textos);
+
+        const btnEliminar = document.createElement("button");
+        btnEliminar.type = "button";
+        btnEliminar.classList.add("btn-remove-item", "btn-eliminar-producto");
+        btnEliminar.textContent = "Eliminar";
+
+        fila.append(info, btnEliminar);
+        return fila;
+    };
+
+    const cargarListaProductosAdmin = async () => {
+        contenedorListaAdmin.innerHTML = "";
+
+        const estadoCarga = document.createElement("p");
+        estadoCarga.textContent = "Cargando productos...";
+        contenedorListaAdmin.appendChild(estadoCarga);
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?select=*&order=id.desc`, {
+                method: "GET",
+                headers: headers
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error HTTP ${res.status} al cargar los productos`);
+            }
+
+            const productos = await res.json();
+            contenedorListaAdmin.innerHTML = "";
+
+            if (productos.length === 0) {
+                const vacio = document.createElement("p");
+                vacio.textContent = "No hay productos cargados en Supabase.";
+                contenedorListaAdmin.appendChild(vacio);
+                return;
+            }
+
+            const filas = productos.map((prod) => crearFilaProductoAdmin(prod));
+            contenedorListaAdmin.append(...filas);
+        } catch (error) {
+            console.error("No se pudo cargar la lista de productos en admin:", error);
+            estadoCarga.textContent = "No se pudo cargar la lista de productos desde Supabase.";
+        }
+    };
+
+    // Delegación de eventos para eliminar un producto con DELETE
+    contenedorListaAdmin.addEventListener("click", async (e) => {
+        if (!e.target.classList.contains("btn-eliminar-producto")) {
+            return;
+        }
+
+        const fila = e.target.closest(".admin-product-item");
+        if (fila === null) {
+            return;
+        }
+
+        const idBorrar = Number(fila.dataset.id);
+        e.target.disabled = true;
+        e.target.textContent = "Borrando...";
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?id=eq.${idBorrar}`, {
+                method: "DELETE",
+                headers: headers
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error HTTP ${res.status} al eliminar el producto`);
+            }
+
+            fila.remove();
+        } catch (error) {
+            console.error("No se pudo eliminar el producto en Supabase:", error);
+            e.target.disabled = false;
+            e.target.textContent = "Eliminar";
+        }
+    });
+
+    // ---- 4) Desbloqueo por contraseña en memoria (NO se guarda en Storage) ----
+    let mensajeErrorAcceso = null;
+
+    formAccesoAdmin.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        if (mensajeErrorAcceso !== null) {
+            mensajeErrorAcceso.remove();
+            mensajeErrorAcceso = null;
+        }
+
+        const claveIngresada = inputPasswordAdmin.value;
+
+        if (claveIngresada !== CLAVE_ADMIN) {
+            mensajeErrorAcceso = document.createElement("p");
+            mensajeErrorAcceso.classList.add("error-msg");
+            mensajeErrorAcceso.textContent = "Contraseña incorrecta. Acceso denegado.";
+            formAccesoAdmin.after(mensajeErrorAcceso);
+            return;
+        }
+
+        // Limpiamos el input para que la contraseña ni siquiera quede escrita en el DOM
+        inputPasswordAdmin.value = "";
+        tarjetaBloqueo.classList.add("oculto");
+        panelAdmin.classList.remove("oculto");
+
+        restaurarBorradorProducto();
+        cargarListaProductosAdmin();
+    });
+
+    // ---- 5) Envío del formulario para añadir un producto a Supabase (POST) ----
+    let mensajeResultadoProducto = null;
+
+    const mostrarAvisoAdmin = (texto, esError) => {
+        if (mensajeResultadoProducto !== null) {
+            mensajeResultadoProducto.remove();
+        }
+
+        mensajeResultadoProducto = document.createElement("p");
+        mensajeResultadoProducto.classList.add(esError ? "error-msg" : "form-success-msg");
+        mensajeResultadoProducto.textContent = texto;
+        formProducto.after(mensajeResultadoProducto);
+    };
+
+    formProducto.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const nombre = inputNombreProd.value.trim();
+        const categoria = selectCategoriaProd.value.trim();
+        const coleccion = selectColeccionProd.value.trim();
+        const precio = Number(inputPrecioProd.value);
+        const badgeElegido = selectBadgeProd.value.trim();
+        const imagenUrl = inputImagenProd.value.trim();
+        const descripcion = textareaDescProd.value.trim();
+
+        if (
+            nombre === "" ||
+            categoria === "" ||
+            coleccion === "" ||
+            imagenUrl === "" ||
+            descripcion === "" ||
+            !(precio > 0)
+        ) {
+            mostrarAvisoAdmin("Completá todos los campos obligatorios y un precio mayor a 0.", true);
+            return;
+        }
+
+        const nuevoProducto = {
+            nombre: nombre,
+            categoria: categoria,
+            coleccion: coleccion,
+            precio: precio,
+            badge: badgeElegido !== "" ? badgeElegido : null,
+            imagen_url: imagenUrl,
+            descripcion: descripcion,
+            pagina_detalle: "producto-scarlet-violet-booster-box.html"
+        };
+
+        btnGuardarProd.disabled = true;
+        btnGuardarProd.textContent = "Guardando...";
+
+        try {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/productos`, {
+                method: "POST",
+                headers: headers,
+                body: JSON.stringify(nuevoProducto)
+            });
+
+            if (!res.ok) {
+                throw new Error(`Error HTTP ${res.status} al crear el producto`);
+            }
+
+            // Salió bien: limpiamos el formulario, borramos el borrador y refrescamos la lista
+            inputNombreProd.value = "";
+            selectCategoriaProd.value = "";
+            selectColeccionProd.value = "";
+            inputPrecioProd.value = "";
+            selectBadgeProd.value = "";
+            inputImagenProd.value = "";
+            textareaDescProd.value = "";
+            actualizarContadorDesc();
+
+            borrarBorradorProducto();
+            mostrarAvisoAdmin(`✔ Producto "${nombre}" añadido correctamente al catálogo.`, false);
+            await cargarListaProductosAdmin();
+        } catch (error) {
+            console.error("No se pudo guardar el producto en Supabase:", error);
+            mostrarAvisoAdmin("No se pudo guardar el producto en Supabase. Revisá los datos e intentá de nuevo.", true);
+        } finally {
+            btnGuardarProd.disabled = false;
+            btnGuardarProd.textContent = "Añadir Producto al Catálogo";
+        }
+    });
+});
