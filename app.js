@@ -19,7 +19,7 @@
  *   1b. Copia local del carrito en localStorage y contador del header (Todas las páginas)
  *   2. Catálogo desde Supabase con fetch y lectura de datos data-* (index.html)
  *   3. Buscador en tiempo real y sistema de filtros (index.html)
- *   4. Enlaces del menú de navegación con switch (index.html)
+ *   4. Enlaces del menú de navegación (index.html)
  *   5. Carrito de compras conectado a Supabase y resumen con reduce (cart.html)
  *   6. Detalle de producto con Supabase: total en vivo y agregar al carrito (producto-*.html)
  *   7. Mostrar / ocultar contraseña con botón 👁 (login.html y registro.html)
@@ -102,7 +102,7 @@ const guardarCarritoLocal = (items) => {
     actualizarContadorCarrito();
 };
 
-// Lee el array de items; devuelve [] si no existe, está corrupto o no es un array válido
+// Lee el array de items; devuelve [] si no existe o está corrupto
 const leerCarritoLocal = () => {
     try {
         const texto = localStorage.getItem(CLAVE_CARRITO);
@@ -111,17 +111,16 @@ const leerCarritoLocal = () => {
         }
 
         const datos = JSON.parse(texto);
-        if (!Array.isArray(datos)) {
+        if (!datos) {
             return [];
         }
 
-        // Descartamos entradas que no tengan los campos numéricos mínimos
+        // Descartamos con .filter() entradas sin id, cantidad o precio válidos
         return datos.filter((item) => {
-            return item !== null &&
-                typeof item === "object" &&
-                Number.isFinite(Number(item.id)) &&
-                Number.isFinite(Number(item.cantidad)) &&
-                Number.isFinite(Number(item.precio));
+            return item &&
+                Number(item.id) > 0 &&
+                Number(item.cantidad) > 0 &&
+                Number(item.precio) >= 0;
         });
     } catch (error) {
         console.warn("La copia local del carrito no se pudo leer, se ignora.", error);
@@ -176,13 +175,8 @@ const sincronizarCarritoLocal = async () => {
     }
 };
 
-// Contador al cargar la página y también cuando otra pestaña cambia el carrito
+// Contador al cargar la página
 actualizarContadorCarrito();
-window.addEventListener("storage", (e) => {
-    if (e.key === CLAVE_CARRITO) {
-        actualizarContadorCarrito();
-    }
-});
 
 /*
  * ============================================================
@@ -237,7 +231,7 @@ const crearTarjeta = (producto) => {
     tarjeta.dataset.categoria = producto.categoria;
     tarjeta.dataset.coleccion = producto.coleccion;
     tarjeta.dataset.precio = producto.precio;
-    tarjeta.dataset.badge = producto.badge !== null ? producto.badge : "";
+    tarjeta.dataset.badge = producto.badge ?? "";
 
     // Imagen + badge
     const contenedorImagen = document.createElement("div");
@@ -369,7 +363,7 @@ const iniciarCatalogo = () => {
         const totalProductos = tarjetas.length;
         const contadorProductos = document.createElement("p");
         contadorProductos.textContent = `Mostrando ${totalProductos} de ${totalProductos} productos`;
-        seccionCatalogo.insertBefore(contadorProductos, grillaProductos);
+        grillaProductos.before(contadorProductos);
 
         // 4) Botón "Limpiar filtros" dentro del formulario de filtros
         const btnLimpiar = document.createElement("button");
@@ -382,11 +376,8 @@ const iniciarCatalogo = () => {
         let mensajeSinResultados = null;
 
         // Función que lleva la pantalla al inicio de "Catálogo de Productos"
-        // restando la altura del header sticky para que no tape el título
         const irACatalogo = () => {
-            const alturaHeader = headerPagina.offsetHeight;
-            const posicionCatalogo = seccionCatalogo.offsetTop - alturaHeader - 15;
-            window.scrollTo({ top: posicionCatalogo, behavior: "smooth" });
+            seccionCatalogo.scrollIntoView({ behavior: "smooth" });
         };
 
         // Función que evalúa el buscador + los filtros activos al mismo tiempo
@@ -395,7 +386,9 @@ const iniciarCatalogo = () => {
 
             // Obtenemos los checkboxes marcados y usamos map() para quedarnos con sus value
             const checksMarcados = document.querySelectorAll('input[name="categoria"]:checked');
-            const categoriasSeleccionadas = Array.from(checksMarcados).map((checkbox) => checkbox.value);
+            const listaChecks = [];
+            checksMarcados.forEach((checkbox) => listaChecks.push(checkbox));
+            const categoriasSeleccionadas = listaChecks.map((checkbox) => checkbox.value);
 
             // Leemos el select de colección y el range de precio máximo
             const coleccionSeleccionada = selectColeccion.value;
@@ -481,13 +474,9 @@ const iniciarCatalogo = () => {
         if (barraMobile !== null && btnCarritoMobile !== null && listaAccionesNav !== null) {
             const ubicarBuscadorSegunPantalla = () => {
                 if (window.innerWidth <= 768) {
-                    if (formBusqueda.parentElement !== barraMobile) {
-                        barraMobile.insertBefore(formBusqueda, btnCarritoMobile);
-                    }
+                    btnCarritoMobile.before(formBusqueda);
                 } else {
-                    if (formBusqueda.parentElement !== listaAccionesNav.parentElement) {
-                        listaAccionesNav.before(formBusqueda);
-                    }
+                    listaAccionesNav.before(formBusqueda);
                 }
             };
 
@@ -499,14 +488,14 @@ const iniciarCatalogo = () => {
         formFiltros.addEventListener("submit", (e) => {
             e.preventDefault();
             filtrarProductos();
-            dropdownFiltros.open = false;
+            dropdownFiltros.removeAttribute("open");
             irACatalogo();
         });
 
         // Evento del botón "Limpiar filtros": resetea los controles, muestra todo y cierra el menú
         btnLimpiar.addEventListener("click", () => {
             limpiarFiltros();
-            dropdownFiltros.open = false;
+            dropdownFiltros.removeAttribute("open");
             irACatalogo();
         });
 
@@ -516,7 +505,7 @@ const iniciarCatalogo = () => {
          * ============================================================
          *  Página donde actúa: index.html (data-pagina="index").
          *  Qué hace: Escucha el click en los links con data-accion y
-         *  usa un switch sobre link.dataset.accion:
+         *  compara link.dataset.accion con ===:
          *   - "ofertas": muestra solo las tarjetas con data-badge="oferta".
          *   - "colecciones": abre el desplegable de filtros con setAttribute("open", "").
          *   - "inicio" / "catalogo": limpian los filtros y vuelven a mostrar todo.
@@ -531,48 +520,36 @@ const iniciarCatalogo = () => {
                 link.addEventListener("click", (e) => {
                     const accion = link.dataset.accion;
 
-                    switch (accion) {
-                        case "ofertas": {
-                            e.preventDefault();
+                    if (accion === "ofertas") {
+                        e.preventDefault();
 
-                            // Primero limpiamos filtros y buscador para que no quede texto viejo
-                            limpiarFiltros();
+                        // Primero limpiamos filtros y buscador para que no quede texto viejo
+                        limpiarFiltros();
 
-                            let ofertasVisibles = 0;
+                        let ofertasVisibles = 0;
 
-                            for (const tarjeta of tarjetas) {
-                                if (tarjeta.dataset.badge === "oferta") {
-                                    tarjeta.classList.remove("oculto");
-                                    ofertasVisibles = ofertasVisibles + 1;
-                                } else {
-                                    tarjeta.classList.add("oculto");
-                                }
+                        for (const tarjeta of tarjetas) {
+                            if (tarjeta.dataset.badge === "oferta") {
+                                tarjeta.classList.remove("oculto");
+                                ofertasVisibles = ofertasVisibles + 1;
+                            } else {
+                                tarjeta.classList.add("oculto");
                             }
-
-                            contadorProductos.textContent = `Mostrando ${ofertasVisibles} de ${totalProductos} productos`;
-                            irACatalogo();
-                            break;
                         }
 
-                        case "colecciones": {
-                            e.preventDefault();
-                            dropdownFiltros.setAttribute("open", "");
-                            break;
-                        }
-
-                        case "inicio": {
-                            e.preventDefault();
-                            limpiarFiltros();
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                            break;
-                        }
-
-                        case "catalogo": {
-                            e.preventDefault();
-                            limpiarFiltros();
-                            irACatalogo();
-                            break;
-                        }
+                        contadorProductos.textContent = `Mostrando ${ofertasVisibles} de ${totalProductos} productos`;
+                        irACatalogo();
+                    } else if (accion === "colecciones") {
+                        e.preventDefault();
+                        dropdownFiltros.setAttribute("open", "");
+                    } else if (accion === "inicio") {
+                        e.preventDefault();
+                        limpiarFiltros();
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    } else if (accion === "catalogo") {
+                        e.preventDefault();
+                        limpiarFiltros();
+                        irACatalogo();
                     }
                 });
             }
@@ -590,7 +567,7 @@ if (paginaActual === "index") {
     } else {
         const mensajeEstado = document.createElement("p");
         mensajeEstado.textContent = "Cargando productos...";
-        seccionCatalogo.insertBefore(mensajeEstado, grillaCatalogo);
+        grillaCatalogo.before(mensajeEstado);
 
         const cargarCatalogo = async () => {
             const productos = await obtenerProductos();
@@ -766,7 +743,10 @@ if (paginaActual === "cart") {
 
         // Arma la copia local a partir de los items que se ven en pantalla y la guarda
         const guardarCopiaDesdeVista = () => {
-            const itemsVista = Array.from(document.querySelectorAll(".cart-item")).map((item) => {
+            const listaItems = [];
+            document.querySelectorAll(".cart-item").forEach((item) => listaItems.push(item));
+
+            const itemsVista = listaItems.map((item) => {
                 return {
                     id: Number(item.dataset.id),
                     producto_id: Number(item.dataset.productoId),
@@ -782,7 +762,8 @@ if (paginaActual === "cart") {
 
         // Arrow function que recalcula el resumen del carrito con reduce()
         const calcularResumen = () => {
-            const itemsActuales = Array.from(document.querySelectorAll(".cart-item"));
+            const itemsActuales = [];
+            document.querySelectorAll(".cart-item").forEach((item) => itemsActuales.push(item));
 
             // Calculamos la cantidad total de artículos con reduce (valor inicial 0)
             const totalArticulos = itemsActuales.reduce((acumulador, item) => {
@@ -907,13 +888,13 @@ if (paginaActual === "cart") {
 
             const cantidad = Number(item.dataset.cantidad);
 
-            if (e.target.matches(".btn-restar")) {
+            if (e.target.classList.contains("btn-restar")) {
                 // Restamos 1 (actualizarItem se encarga de no bajar de 1)
                 actualizarItem(item, cantidad - 1);
-            } else if (e.target.matches(".btn-sumar")) {
+            } else if (e.target.classList.contains("btn-sumar")) {
                 // Sumamos 1 (actualizarItem se encarga de no pasar de 20)
                 actualizarItem(item, cantidad + 1);
-            } else if (e.target.matches(".btn-remove-item")) {
+            } else if (e.target.classList.contains("btn-remove-item")) {
                 eliminarItem(item);
             }
         });
@@ -947,11 +928,22 @@ if (paginaActual === "cart") {
                 calcularResumen();
                 guardarCarritoLocal([]); // El carrito quedó vacío también en la copia local
 
-                contenedorResumen.innerHTML = `
-                    <h2 class="summary-title">¡Compra Confirmada!</h2>
-                    <p class="summary-label">¡Gracias por tu compra! Total abonado: $${totalAbonado} USD</p>
-                    <a href="index.html" class="continue-shopping">Volver al inicio</a>
-                `;
+                contenedorResumen.innerHTML = "";
+
+                const tituloConfirmado = document.createElement("h2");
+                tituloConfirmado.classList.add("summary-title");
+                tituloConfirmado.textContent = "¡Compra Confirmada!";
+
+                const textoConfirmado = document.createElement("p");
+                textoConfirmado.classList.add("summary-label");
+                textoConfirmado.textContent = `¡Gracias por tu compra! Total abonado: $${totalAbonado} USD`;
+
+                const linkInicio = document.createElement("a");
+                linkInicio.href = "index.html";
+                linkInicio.classList.add("continue-shopping");
+                linkInicio.textContent = "Volver al inicio";
+
+                contenedorResumen.append(tituloConfirmado, textoConfirmado, linkInicio);
             } catch (error) {
                 console.error("No se pudo confirmar la compra en Supabase:", error);
                 btnPagar.disabled = false;
@@ -1201,7 +1193,9 @@ if (paginaActual === "producto") {
                 throw new Error(`Ya tenés el máximo de ${CANTIDAD_MAXIMA} unidades de este producto en el carrito.`);
             }
 
-            const nuevaCantidad = Math.min(cantidadActual + cantidad, CANTIDAD_MAXIMA);
+            const nuevaCantidad = cantidadActual + cantidad > CANTIDAD_MAXIMA
+                ? CANTIDAD_MAXIMA
+                : cantidadActual + cantidad;
 
             const resPatch = await fetch(`${SUPABASE_URL}/rest/v1/carrito?id=eq.${itemExistente.id}`, {
                 method: "PATCH",
@@ -1234,7 +1228,7 @@ if (paginaActual === "producto") {
                 mostrarMensajeExito(cantidadAgregada);
             } catch (error) {
                 console.error("No se pudo agregar al carrito:", error);
-                const texto = error.message.startsWith("Ya tenés")
+                const texto = error.message.includes("Ya tenés")
                     ? error.message
                     : "No se pudo agregar el producto al carrito. Intentá de nuevo más tarde.";
                 mostrarMensajeError(texto);
@@ -1482,10 +1476,10 @@ if (paginaActual === "recuperar") {
  *     classList.toggle al pasar 450 caracteres.
  *   - Al hacer submit: preventDefault, arma el objeto con nombre,
  *     email, telefono, motivo y mensaje (trim) y hace POST a
- *     /rest/v1/mensajes_contacto usando fetch().then().catch().finally()
- *     (verificando if (!res.ok) en el primer .then).
+ *     /rest/v1/mensajes_contacto usando async / await con
+ *     try / catch / finally (verificando if (!res.ok)).
  *   - Mientras envía, deshabilita el botón y cambia su texto a
- *     "Enviando..."; en .finally() vuelve a habilitarlo.
+ *     "Enviando..."; en finally vuelve a habilitarlo.
  *   - Si sale bien, oculta el formulario con classList.add("oculto")
  *     y muestra "¡Gracias NOMBRE! Te responderemos a EMAIL" junto al
  *     botón "Enviar otro mensaje" que limpia los campos (.value = "")
@@ -1558,7 +1552,7 @@ if (paginaActual === "contacto") {
             }
         };
 
-        // Recupera el borrador con JSON.parse y rellena los campos
+        // Recupera el borrador con JSON.parse y rellena los campos usando ??
         const restaurarBorradorContacto = () => {
             try {
                 const texto = sessionStorage.getItem(CLAVE_BORRADOR);
@@ -1567,19 +1561,13 @@ if (paginaActual === "contacto") {
                 }
 
                 const borrador = JSON.parse(texto);
-                if (borrador === null || typeof borrador !== "object") {
+                if (borrador === null) {
                     return;
                 }
 
-                if (typeof borrador.nombre === "string") {
-                    inputNombreContacto.value = borrador.nombre;
-                }
-                if (typeof borrador.motivo === "string") {
-                    selectMotivoContacto.value = borrador.motivo;
-                }
-                if (typeof borrador.mensaje === "string") {
-                    textareaMensaje.value = borrador.mensaje.slice(0, 500);
-                }
+                inputNombreContacto.value = borrador.nombre ?? "";
+                selectMotivoContacto.value = borrador.motivo ?? "";
+                textareaMensaje.value = borrador.mensaje ?? "";
 
                 // Actualizamos el contador de caracteres con el mensaje restaurado
                 const cantidadRestaurada = textareaMensaje.value.length;
@@ -1600,7 +1588,7 @@ if (paginaActual === "contacto") {
         let bloqueExitoContacto = null;
         let mensajeErrorContacto = null;
 
-        formContacto.addEventListener("submit", (e) => {
+        formContacto.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             const nombre = inputNombreContacto.value.trim();
@@ -1626,67 +1614,66 @@ if (paginaActual === "contacto") {
             btnEnviarContacto.disabled = true;
             btnEnviarContacto.textContent = "Enviando...";
 
-            fetch(`${SUPABASE_URL}/rest/v1/mensajes_contacto`, {
-                method: "POST",
-                headers: headers,
-                body: JSON.stringify(datos)
-            })
-                .then((res) => {
-                    if (!res.ok) {
-                        throw new Error(`Error HTTP ${res.status} al guardar el mensaje de contacto`);
-                    }
-
-                    // El mensaje se envió bien: ya no hace falta el borrador
-                    borrarBorradorContacto();
-
-                    formContacto.classList.add("oculto");
-
-                    if (bloqueExitoContacto !== null) {
-                        bloqueExitoContacto.remove();
-                    }
-
-                    bloqueExitoContacto = document.createElement("div");
-                    bloqueExitoContacto.classList.add("form-success-msg");
-
-                    const textoExito = document.createElement("p");
-                    textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
-
-                    const btnOtroMensaje = document.createElement("button");
-                    btnOtroMensaje.type = "button";
-                    btnOtroMensaje.classList.add("auth-submit-btn");
-                    btnOtroMensaje.textContent = "Enviar otro mensaje";
-
-                    btnOtroMensaje.addEventListener("click", () => {
-                        inputNombreContacto.value = "";
-                        inputEmailContacto.value = "";
-                        inputTelefonoContacto.value = "";
-                        selectMotivoContacto.value = "";
-                        textareaMensaje.value = "";
-                        checkPrivacidad.checked = false;
-
-                        contadorCaracteres.textContent = "0 / 500 caracteres";
-                        contadorCaracteres.classList.remove("char-limit-warn");
-
-                        bloqueExitoContacto.remove();
-                        bloqueExitoContacto = null;
-                        formContacto.classList.remove("oculto");
-                    });
-
-                    bloqueExitoContacto.append(textoExito, btnOtroMensaje);
-                    formContacto.after(bloqueExitoContacto);
-                })
-                .catch((error) => {
-                    console.error("No se pudo enviar el mensaje de contacto a Supabase:", error);
-
-                    mensajeErrorContacto = document.createElement("p");
-                    mensajeErrorContacto.classList.add("error-msg");
-                    mensajeErrorContacto.textContent = "No se pudo enviar tu mensaje. Por favor, intentá de nuevo más tarde.";
-                    formContacto.after(mensajeErrorContacto);
-                })
-                .finally(() => {
-                    btnEnviarContacto.disabled = false;
-                    btnEnviarContacto.textContent = "Enviar Mensaje";
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/mensajes_contacto`, {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(datos)
                 });
+
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al guardar el mensaje de contacto`);
+                }
+
+                // El mensaje se envió bien: ya no hace falta el borrador
+                borrarBorradorContacto();
+
+                formContacto.classList.add("oculto");
+
+                if (bloqueExitoContacto !== null) {
+                    bloqueExitoContacto.remove();
+                }
+
+                bloqueExitoContacto = document.createElement("div");
+                bloqueExitoContacto.classList.add("form-success-msg");
+
+                const textoExito = document.createElement("p");
+                textoExito.textContent = `¡Gracias ${nombre}! Te responderemos a ${email}`;
+
+                const btnOtroMensaje = document.createElement("button");
+                btnOtroMensaje.type = "button";
+                btnOtroMensaje.classList.add("auth-submit-btn");
+                btnOtroMensaje.textContent = "Enviar otro mensaje";
+
+                btnOtroMensaje.addEventListener("click", () => {
+                    inputNombreContacto.value = "";
+                    inputEmailContacto.value = "";
+                    inputTelefonoContacto.value = "";
+                    selectMotivoContacto.value = "";
+                    textareaMensaje.value = "";
+                    checkPrivacidad.checked = false;
+
+                    contadorCaracteres.textContent = "0 / 500 caracteres";
+                    contadorCaracteres.classList.remove("char-limit-warn");
+
+                    bloqueExitoContacto.remove();
+                    bloqueExitoContacto = null;
+                    formContacto.classList.remove("oculto");
+                });
+
+                bloqueExitoContacto.append(textoExito, btnOtroMensaje);
+                formContacto.after(bloqueExitoContacto);
+            } catch (error) {
+                console.error("No se pudo enviar el mensaje de contacto a Supabase:", error);
+
+                mensajeErrorContacto = document.createElement("p");
+                mensajeErrorContacto.classList.add("error-msg");
+                mensajeErrorContacto.textContent = "No se pudo enviar tu mensaje. Por favor, intentá de nuevo más tarde.";
+                formContacto.after(mensajeErrorContacto);
+            } finally {
+                btnEnviarContacto.disabled = false;
+                btnEnviarContacto.textContent = "Enviar Mensaje";
+            }
         });
     }
 }
@@ -1823,15 +1810,15 @@ if (paginaActual === "index") {
  *      recuerda al recargar. No se usan cookies.
  * ============================================================
  */
-const botonTema = document.querySelector("#btn-tema");
+const botonTema = document.getElementById("btn-tema");
 
-// Lee el tema guardado; devuelve null si no hay nada o si localStorage falla
+// Lee el tema guardado; usa ?? para devolver "oscuro" por defecto si no hay nada guardado
 const leerTemaGuardado = () => {
     try {
-        return localStorage.getItem("tema");
+        return localStorage.getItem("tema") ?? "oscuro";
     } catch (error) {
         console.warn("localStorage no está disponible, no se puede leer el tema.", error);
-        return null;
+        return "oscuro";
     }
 };
 
@@ -1850,7 +1837,7 @@ const actualizarBotonTema = (esClaro) => {
         return;
     }
     botonTema.textContent = esClaro ? "🌙 Modo oscuro" : "☀️ Modo claro";
-    botonTema.setAttribute("aria-pressed", String(esClaro));
+    botonTema.setAttribute("aria-pressed", esClaro ? "true" : "false");
 };
 
 // 1) Aplicar el tema guardado apenas carga la página
@@ -1886,8 +1873,8 @@ if (botonTema === null) {
  * ============================================================
  */
 if (paginaActual === "index") {
-    const bannerAviso = document.querySelector("#banner-aviso");
-    const btnCerrarBanner = document.querySelector("#btn-cerrar-banner");
+    const bannerAviso = document.getElementById("banner-aviso");
+    const btnCerrarBanner = document.getElementById("btn-cerrar-banner");
 
     if (bannerAviso === null || btnCerrarBanner === null) {
         console.warn("No se encontró el banner de aviso en index.html.");
