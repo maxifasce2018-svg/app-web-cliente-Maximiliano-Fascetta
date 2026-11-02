@@ -91,3 +91,5 @@ cetral y footer, sobre una tienda de cartas.
 45.Quiero un archivo nuevo admin.html, estilos nuevos en styles.css, un acceso discreto en el footer de index.html y una sección nueva en app.js que usa DOMContentLoaded, getElementById, validación con ===, sessionStorage (borradorProducto) y fetch (GET, POST, DELETE) con async/await y try/catch/finally.
 
 46.Quiero revisar las páginas HTML, styles.css, app.js y Prediccion.md, corregir los errores si encuentra alguno y devuelve un resumen de verificación punto por punto contra el temario.
+
+47.Se crea sobres.html y una sección nueva en app.js que arma el sobre con Math.random() según la rareza. Los 13 HTML reciben un <li> más en el menú. Si la API falla, se muestra un mensaje de error.
