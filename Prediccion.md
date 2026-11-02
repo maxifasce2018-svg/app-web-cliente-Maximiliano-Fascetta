@@ -87,3 +87,5 @@ cetral y footer, sobre una tienda de cartas.
 43.Quiero que el carrito persista con localStorage y JSON, con contador en el header.
 
 44.Quiero un banner cerrable (localStorage) y un borrador del formulario de contacto (sessionStorage).
+
+45.Quiero un archivo nuevo admin.html, estilos nuevos en styles.css, un acceso discreto en el footer de index.html y una sección nueva en app.js que usa DOMContentLoaded, getElementById, validación con ===, sessionStorage (borradorProducto) y fetch (GET, POST, DELETE) con async/await y try/catch/finally.
