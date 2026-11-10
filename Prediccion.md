@@ -92,4 +92,4 @@ cetral y footer, sobre una tienda de cartas.
 
 46.Quiero revisar las páginas HTML, styles.css, app.js y Prediccion.md, corregir los errores si encuentra alguno y devuelve un resumen de verificación punto por punto contra el temario.
 
-47.Quiero que cada vez que alguien inicie sesión o se registre correctamente, la página lo redirija directamente a index.html, sin mostrar el mensaje de éxito intermedio. Solo modificar los bloques de login y registro de app.js (y sus comentarios), sin tocar el diseño, y comprobar que las validaciones siguen funcionando.
+47.Quiero que cuando el usuario completa el login o el registro sin errores, el navegador lo manda directo a index.html de forma instantánea sin mostrar avisos de éxito intermedios; si los datos están mal, se queda en la página y muestra los errores como siempre.
