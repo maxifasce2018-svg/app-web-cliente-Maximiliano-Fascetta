@@ -101,3 +101,5 @@ cetral y footer, sobre una tienda de cartas.
 50.Quiero agregar las fotos de los productos nuevos
 
 51.El menú lateral de filtros suma su propio campo de búsqueda para filtrar en tiempo real; si se usa el buscador general del encabezado, el texto se copia en ambos lados y los filtros manuales (precios y casillas) se limpian automáticamente para no cruzar búsquedas.
+
+52.Cada cuenta nueva creada se envía y almacena de forma persistente en Supabase (sin guardar contraseñas por seguridad); mientras se procesa la solicitud el botón se bloquea, y solo si la base de datos confirma el guardado se redirige al inicio.
