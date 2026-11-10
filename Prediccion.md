@@ -91,3 +91,5 @@ cetral y footer, sobre una tienda de cartas.
 45.Quiero un archivo nuevo admin.html, estilos nuevos en styles.css, un acceso discreto en el footer de index.html y una sección nueva en app.js que usa DOMContentLoaded, getElementById, validación con ===, sessionStorage (borradorProducto) y fetch (GET, POST, DELETE) con async/await y try/catch/finally.
 
 46.Quiero revisar las páginas HTML, styles.css, app.js y Prediccion.md, corregir los errores si encuentra alguno y devuelve un resumen de verificación punto por punto contra el temario.
+
+47.Quiero que cada vez que alguien inicie sesión o se registre correctamente, la página lo redirija directamente a index.html, sin mostrar el mensaje de éxito intermedio. Solo modificar los bloques de login y registro de app.js (y sus comentarios), sin tocar el diseño, y comprobar que las validaciones siguen funcionando.
