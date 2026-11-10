@@ -244,10 +244,16 @@ const crearTarjeta = (producto) => {
         contenedorImagen.appendChild(badge);
     }
 
-    const imagen = document.createElement("img");
-    imagen.src = producto.imagen_url;
-    imagen.alt = producto.nombre;
-    contenedorImagen.appendChild(imagen);
+    if (producto.imagen_url && producto.imagen_url.trim() !== "") {
+        const imagen = document.createElement("img");
+        imagen.src = producto.imagen_url;
+        imagen.alt = producto.nombre;
+        contenedorImagen.appendChild(imagen);
+    } else {
+        const recuadroVacio = document.createElement("div");
+        recuadroVacio.classList.add("image-placeholder");
+        contenedorImagen.appendChild(recuadroVacio);
+    }
 
     // Cuerpo: título, descripción (si existe en la tabla), precio y link
     const cuerpo = document.createElement("div");
@@ -274,6 +280,13 @@ const crearTarjeta = (producto) => {
     link.href = producto.pagina_detalle;
     link.classList.add("product-link");
     link.textContent = "Ver Detalle";
+    link.addEventListener("click", () => {
+        try {
+            sessionStorage.setItem("productoSeleccionadoId", String(producto.id));
+        } catch (error) {
+            console.warn("No se pudo guardar el producto seleccionado en sessionStorage:", error);
+        }
+    });
     cuerpo.appendChild(link);
 
     tarjeta.append(contenedorImagen, cuerpo);
@@ -682,14 +695,20 @@ if (paginaActual === "cart") {
             item.dataset.precio = precio;
             item.dataset.cantidad = cantidad;
 
-            // Imagen
+            // Imagen (o recuadro vacío si el producto no tiene foto)
             const divImagen = document.createElement("div");
             divImagen.classList.add("cart-item-image");
 
-            const img = document.createElement("img");
-            img.src = producto.imagen_url;
-            img.alt = producto.nombre;
-            divImagen.appendChild(img);
+            if (producto.imagen_url && producto.imagen_url.trim() !== "") {
+                const img = document.createElement("img");
+                img.src = producto.imagen_url;
+                img.alt = producto.nombre;
+                divImagen.appendChild(img);
+            } else {
+                const recuadroVacio = document.createElement("div");
+                recuadroVacio.classList.add("image-placeholder");
+                divImagen.appendChild(recuadroVacio);
+            }
 
             // Información + botones "−", "+" y "Eliminar"
             const infoItem = document.createElement("div");
@@ -747,13 +766,14 @@ if (paginaActual === "cart") {
             document.querySelectorAll(".cart-item").forEach((item) => listaItems.push(item));
 
             const itemsVista = listaItems.map((item) => {
+                const imgElemento = item.querySelector("img");
                 return {
                     id: Number(item.dataset.id),
                     producto_id: Number(item.dataset.productoId),
                     cantidad: Number(item.dataset.cantidad),
                     precio: Number(item.dataset.precio),
                     nombre: item.querySelector(".cart-item-title").textContent,
-                    imagen_url: item.querySelector("img").getAttribute("src")
+                    imagen_url: imgElemento !== null ? imgElemento.getAttribute("src") : ""
                 };
             });
 
@@ -1042,12 +1062,37 @@ if (paginaActual === "cart") {
  */
 if (paginaActual === "producto") {
     const elementoTituloProducto = document.querySelector(".detail-title");
+    const contenedorImagenDetalle = document.querySelector(".detail-image");
+    const textoDescripcionDetalle = document.querySelector(".detail-description-text");
+    const spanDetalleCategoria = document.querySelector("[data-detalle-categoria]");
+    const spanDetalleColeccion = document.querySelector("[data-detalle-coleccion]");
     const spanPrecioUnitario = document.querySelector(".price");
     const formAgregar = document.querySelector(".add-to-cart-form");
     const selectorCantidad = document.querySelector(".quantity-selector");
     const inputCantidad = document.querySelector("#cantidad");
     const btnAgregar = document.querySelector(".add-to-cart-btn");
-    const idProducto = Number(document.body.dataset.id);
+
+    const nombresCategorias = {
+        "booster-box": "Booster Box",
+        "booster-pack": "Booster Pack",
+        "base-set": "Base Set",
+        "etb": "Elite Trainer Box"
+    };
+
+    const nombresColecciones = {
+        "scarlet-violet": "Scarlet & Violet",
+        "sword-shield": "Sword & Shield",
+        "cosmic-eclipse": "Cosmic Eclipse"
+    };
+
+    let idGuardado = 0;
+    try {
+        idGuardado = Number(sessionStorage.getItem("productoSeleccionadoId"));
+    } catch (error) {
+        idGuardado = 0;
+    }
+
+    const idProducto = idGuardado > 0 ? idGuardado : Number(document.body.dataset.id);
 
     if (
         elementoTituloProducto === null ||
@@ -1060,7 +1105,7 @@ if (paginaActual === "producto") {
     ) {
         console.warn("Faltan elementos esperados (o el data-id del <body>) en la página de detalle de producto.");
     } else {
-        const tituloProducto = elementoTituloProducto.textContent;
+        let tituloProducto = elementoTituloProducto.textContent;
         const CANTIDAD_MAXIMA = 20;
 
         // Precio de respaldo (el del HTML) hasta que responda Supabase
@@ -1093,7 +1138,7 @@ if (paginaActual === "producto") {
             actualizarTotalProducto();
         });
 
-        // GET del producto en Supabase para usar su precio en el total en vivo
+        // GET del producto en Supabase para mostrar sus datos reales y su precio en vivo
         const cargarPrecioProducto = async () => {
             try {
                 const res = await fetch(`${SUPABASE_URL}/rest/v1/productos?id=eq.${idProducto}`, {
@@ -1111,8 +1156,41 @@ if (paginaActual === "producto") {
                     throw new Error(`No existe el producto con id ${idProducto} en Supabase`);
                 }
 
-                precioUnitario = Number(datos[0].precio);
+                const productoDB = datos[0];
+                tituloProducto = productoDB.nombre;
+                elementoTituloProducto.textContent = productoDB.nombre;
+                document.title = `${productoDB.nombre} - El Centro Pokécard`;
+
+                precioUnitario = Number(productoDB.precio);
                 spanPrecioUnitario.dataset.precio = precioUnitario;
+                spanPrecioUnitario.textContent = `$${precioUnitario} USD`;
+
+                if (contenedorImagenDetalle !== null) {
+                    contenedorImagenDetalle.innerHTML = "";
+                    if (productoDB.imagen_url && productoDB.imagen_url.trim() !== "") {
+                        const imgDetalle = document.createElement("img");
+                        imgDetalle.src = productoDB.imagen_url;
+                        imgDetalle.alt = productoDB.nombre;
+                        contenedorImagenDetalle.appendChild(imgDetalle);
+                    } else {
+                        const recuadroVacio = document.createElement("div");
+                        recuadroVacio.classList.add("image-placeholder");
+                        contenedorImagenDetalle.appendChild(recuadroVacio);
+                    }
+                }
+
+                if (spanDetalleCategoria !== null) {
+                    spanDetalleCategoria.textContent = nombresCategorias[productoDB.categoria] ?? productoDB.categoria;
+                }
+
+                if (spanDetalleColeccion !== null) {
+                    spanDetalleColeccion.textContent = nombresColecciones[productoDB.coleccion] ?? productoDB.coleccion;
+                }
+
+                if (textoDescripcionDetalle !== null && productoDB.descripcion) {
+                    textoDescripcionDetalle.textContent = productoDB.descripcion;
+                }
+
                 actualizarTotalProducto();
             } catch (error) {
                 console.warn("No se pudo leer el precio desde Supabase, se usa el del HTML:", error);
@@ -2051,11 +2129,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const info = document.createElement("div");
         info.classList.add("admin-product-info");
 
-        const miniatura = document.createElement("img");
-        miniatura.classList.add("admin-product-thumb");
-        miniatura.src = producto.imagen_url;
-        miniatura.alt = producto.nombre;
-        info.appendChild(miniatura);
+        if (producto.imagen_url && producto.imagen_url.trim() !== "") {
+            const miniatura = document.createElement("img");
+            miniatura.classList.add("admin-product-thumb");
+            miniatura.src = producto.imagen_url;
+            miniatura.alt = producto.nombre;
+            info.appendChild(miniatura);
+        } else {
+            const miniaturaVacia = document.createElement("div");
+            miniaturaVacia.classList.add("admin-product-thumb", "image-placeholder");
+            info.appendChild(miniaturaVacia);
+        }
 
         const textos = document.createElement("div");
 
@@ -2223,7 +2307,7 @@ document.addEventListener("DOMContentLoaded", () => {
             badge: badgeElegido !== "" ? badgeElegido : null,
             imagen_url: imagenUrl,
             descripcion: descripcion,
-            pagina_detalle: "producto-scarlet-violet-booster-box.html"
+            pagina_detalle: "producto.html"
         };
 
         btnGuardarProd.disabled = true;
