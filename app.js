@@ -1290,8 +1290,8 @@ inputsPasswordPagina.forEach(agregarTogglePassword);
  *   - Al corregir el campo, quita .input-error y remueve el span.
  *   - En el submit verifica que nombre y apellido no queden vacíos
  *     tras trim() y que password y confirm_password sean iguales (!==).
- *   - Si todo es válido, hace preventDefault y reemplaza el formulario
- *     por "¡Cuenta creada, NOMBRE!".
+ *   - Si todo es válido, hace preventDefault y redirige directamente
+ *     a index.html con window.location.href.
  * ============================================================
  */
 if (paginaActual === "registro") {
@@ -1390,13 +1390,8 @@ if (paginaActual === "registro") {
                 return;
             }
 
-            const nombreLimpio = inputNombre.value.trim();
-            const mensajeExito = document.createElement("p");
-            mensajeExito.classList.add("form-success-msg");
-            mensajeExito.textContent = `¡Cuenta creada, ${nombreLimpio}!`;
-
-            formRegistro.after(mensajeExito);
-            formRegistro.remove();
+            // Si todo es válido, redirigimos directamente al inicio
+            window.location.href = "index.html";
         });
     }
 }
@@ -1407,8 +1402,8 @@ if (paginaActual === "registro") {
  * ============================================================
  *  Página donde actúa: login.html (data-pagina="login").
  *  Qué hace: Al enviar el formulario válido, cancela el envío
- *  con preventDefault(), oculta el formulario con classList.add("oculto")
- *  y muestra "¡Bienvenido de nuevo!" con template literal.
+ *  con preventDefault() y redirige directamente a index.html
+ *  con window.location.href.
  * ============================================================
  */
 if (paginaActual === "login") {
@@ -1421,14 +1416,12 @@ if (paginaActual === "login") {
         formLogin.addEventListener("submit", (e) => {
             e.preventDefault();
 
-            const emailIngresado = inputEmailLogin.value.trim();
-            formLogin.classList.add("oculto");
+            if (inputEmailLogin.value.trim() === "") {
+                return;
+            }
 
-            const mensajeExito = document.createElement("p");
-            mensajeExito.classList.add("form-success-msg");
-            mensajeExito.textContent = `¡Bienvenido de nuevo! (${emailIngresado})`;
-
-            formLogin.after(mensajeExito);
+            // Inicio de sesión válido: redirigimos directamente al inicio
+            window.location.href = "index.html";
         });
     }
 }
