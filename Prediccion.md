@@ -99,3 +99,5 @@ cetral y footer, sobre una tienda de cartas.
 49.El catálogo crece de 7 a 17 artículos con sus respectivas páginas de detalle creadas; si un producto no tiene foto asignada, la interfaz muestra un recuadro vacío limpio sin romper el diseño, el buscador ni el carrito.
 
 50.Quiero agregar las fotos de los productos nuevos
+
+51.El menú lateral de filtros suma su propio campo de búsqueda para filtrar en tiempo real; si se usa el buscador general del encabezado, el texto se copia en ambos lados y los filtros manuales (precios y casillas) se limpian automáticamente para no cruzar búsquedas.

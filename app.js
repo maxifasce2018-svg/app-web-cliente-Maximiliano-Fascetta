@@ -338,6 +338,7 @@ const iniciarCatalogo = () => {
      */
     const formBusqueda = document.querySelector(".nav-search-bar");
     const inputBusqueda = document.querySelector(".nav-search-input");
+    const inputBusquedaFiltro = document.querySelector(".filter-search-input");
     const seccionCatalogo = document.querySelector(".catalog");
     const grillaProductos = document.querySelector(".product-grid");
     const formFiltros = document.querySelector(".filter-form");
@@ -351,6 +352,7 @@ const iniciarCatalogo = () => {
     if (
         formBusqueda === null ||
         inputBusqueda === null ||
+        inputBusquedaFiltro === null ||
         seccionCatalogo === null ||
         grillaProductos === null ||
         formFiltros === null ||
@@ -372,7 +374,7 @@ const iniciarCatalogo = () => {
             spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
         });
 
-        // 3) Contador arriba del grid: "Mostrando X de 7 productos"
+        // 3) Contador arriba del grid: "Mostrando X de N productos"
         const totalProductos = tarjetas.length;
         const contadorProductos = document.createElement("p");
         contadorProductos.textContent = `Mostrando ${totalProductos} de ${totalProductos} productos`;
@@ -393,9 +395,20 @@ const iniciarCatalogo = () => {
             seccionCatalogo.scrollIntoView({ behavior: "smooth" });
         };
 
-        // Función que evalúa el buscador + los filtros activos al mismo tiempo
+        // Reinicia únicamente los controles del panel de filtros (checkboxes, colección y precio)
+        const reiniciarControlesFiltro = () => {
+            for (const checkbox of checkboxesCategoria) {
+                checkbox.checked = false;
+            }
+            selectColeccion.value = "";
+            inputPrecioMax.value = 500;
+            spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+        };
+
+        // Función que evalúa el buscador general + el buscador del filtro + los filtros activos al mismo tiempo
         const filtrarProductos = () => {
-            const textoBuscado = inputBusqueda.value.trim().toLowerCase();
+            const textoBuscadoGeneral = inputBusqueda.value.trim().toLowerCase();
+            const textoBuscadoFiltro = inputBusquedaFiltro.value.trim().toLowerCase();
 
             // Obtenemos los checkboxes marcados y usamos map() para quedarnos con sus value
             const checksMarcados = document.querySelectorAll('input[name="categoria"]:checked');
@@ -415,13 +428,20 @@ const iniciarCatalogo = () => {
                 const coleccionTarjeta = tarjeta.dataset.coleccion;
                 const precioTarjeta = Number(tarjeta.dataset.precio);
 
-                const coincideBusqueda = titulo.includes(textoBuscado);
+                const coincideBusquedaGeneral = titulo.includes(textoBuscadoGeneral);
+                const coincideBusquedaFiltro = titulo.includes(textoBuscadoFiltro);
                 const coincideCategoria = categoriasSeleccionadas.length === 0 || categoriasSeleccionadas.includes(categoriaTarjeta);
                 const coincideColeccion = coleccionSeleccionada === "" || coleccionTarjeta === coleccionSeleccionada;
                 const coincidePrecio = precioTarjeta <= precioMaximo;
 
                 // Combinamos todas las condiciones con &&
-                if (coincideBusqueda && coincideCategoria && coincideColeccion && coincidePrecio) {
+                if (
+                    coincideBusquedaGeneral &&
+                    coincideBusquedaFiltro &&
+                    coincideCategoria &&
+                    coincideColeccion &&
+                    coincidePrecio
+                ) {
                     tarjeta.classList.remove("oculto");
                     resultadosVisibles = resultadosVisibles + 1;
                 } else {
@@ -438,7 +458,10 @@ const iniciarCatalogo = () => {
                     mensajeSinResultados = document.createElement("p");
                     seccionCatalogo.appendChild(mensajeSinResultados);
                 }
-                mensajeSinResultados.textContent = `No encontramos productos para: ${inputBusqueda.value.trim()}`;
+                const terminoMostrado = inputBusqueda.value.trim() !== ""
+                    ? inputBusqueda.value.trim()
+                    : inputBusquedaFiltro.value.trim();
+                mensajeSinResultados.textContent = `No encontramos productos para: ${terminoMostrado}`;
             } else {
                 if (mensajeSinResultados !== null) {
                     mensajeSinResultados.remove();
@@ -448,17 +471,13 @@ const iniciarCatalogo = () => {
         };
 
         // Función reutilizable que vuelve todos los controles a su estado inicial
-        // (checkboxes destildados, colección "Todas", precio en 500 y buscador vacío)
+        // (checkboxes destildados, colección "Todas", precio en 500 y ambos buscadores vacíos)
         // y vuelve a filtrar para mostrar todos los productos.
         // La usan: el botón "Limpiar filtros" y los links Inicio, Catálogo y Ofertas.
         const limpiarFiltros = () => {
-            for (const checkbox of checkboxesCategoria) {
-                checkbox.checked = false;
-            }
-            selectColeccion.value = "";
-            inputPrecioMax.value = 500;
-            spanPrecio.textContent = `Hasta $${inputPrecioMax.value} USD`;
+            reiniciarControlesFiltro();
             inputBusqueda.value = "";
+            inputBusquedaFiltro.value = "";
 
             filtrarProductos();
         };
@@ -470,13 +489,22 @@ const iniciarCatalogo = () => {
             inputBusqueda.blur();
         });
 
-        // Escuchamos cada vez que el usuario escribe o borra en el buscador
+        // Al escribir en el buscador general del header:
+        // se reinician los filtros tildados (categorías, colección y precio),
+        // se sincroniza el buscador interno del filtro y se filtra en vivo.
         inputBusqueda.addEventListener("input", () => {
+            reiniciarControlesFiltro();
+            inputBusquedaFiltro.value = inputBusqueda.value;
             filtrarProductos();
 
             if (window.innerWidth <= 768 && inputBusqueda.value.trim() !== "") {
                 irACatalogo();
             }
+        });
+
+        // El buscador interno de la barra de filtros filtra en vivo junto con los demás filtros
+        inputBusquedaFiltro.addEventListener("input", () => {
+            filtrarProductos();
         });
 
         // En celular (<= 768px), ubicamos la barra de búsqueda afuera, al lado del botón hamburguesa
