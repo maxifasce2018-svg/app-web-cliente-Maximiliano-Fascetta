@@ -1387,7 +1387,7 @@ inputsPasswordPagina.forEach(agregarTogglePassword);
 
 /*
  * ============================================================
- *  8. FORMULARIO DE REGISTRO (registro.html)
+ *  8. FORMULARIO DE REGISTRO CON SUPABASE (registro.html)
  * ============================================================
  *  Página donde actúa: registro.html (data-pagina="registro").
  *  Qué hace:
@@ -1396,23 +1396,36 @@ inputsPasswordPagina.forEach(agregarTogglePassword);
  *   - Al corregir el campo, quita .input-error y remueve el span.
  *   - En el submit verifica que nombre y apellido no queden vacíos
  *     tras trim() y que password y confirm_password sean iguales (!==).
- *   - Si todo es válido, hace preventDefault y redirige directamente
- *     a index.html con window.location.href.
+ *   - Si todo es válido, arma el objeto con nombre, apellido, email,
+ *     telefono, fecha_nacimiento y newsletter (sin guardar la contraseña)
+ *     y hace POST a /rest/v1/registros con async/await y try/catch/finally,
+ *     mostrando "Creando cuenta..." y redirigiendo a index.html solo si
+ *     se guardó bien, o mostrando un mensaje de error si falla.
  * ============================================================
  */
 if (paginaActual === "registro") {
     const formRegistro = document.querySelector(".auth-form");
     const inputNombre = document.querySelector("#nombre");
     const inputApellido = document.querySelector("#apellido");
+    const inputEmailRegistro = document.querySelector("#email");
+    const inputTelefonoRegistro = document.querySelector("#telefono");
+    const inputFechaNacimiento = document.querySelector("#fecha_nacimiento");
     const inputPassword = document.querySelector("#password");
     const inputConfirmPassword = document.querySelector("#confirm_password");
+    const checkNewsletter = document.querySelector('input[name="newsletter"]');
+    const btnCrearCuenta = document.querySelector(".auth-submit-btn");
 
     if (
         formRegistro === null ||
         inputNombre === null ||
         inputApellido === null ||
+        inputEmailRegistro === null ||
+        inputTelefonoRegistro === null ||
+        inputFechaNacimiento === null ||
         inputPassword === null ||
-        inputConfirmPassword === null
+        inputConfirmPassword === null ||
+        checkNewsletter === null ||
+        btnCrearCuenta === null
     ) {
         console.warn("Faltan elementos esperados en el formulario de registro.html.");
     } else {
@@ -1468,12 +1481,19 @@ if (paginaActual === "registro") {
             }
         });
 
-        formRegistro.addEventListener("submit", (e) => {
+        let mensajeErrorRegistro = null;
+
+        formRegistro.addEventListener("submit", async (e) => {
             e.preventDefault();
 
             limpiarError(inputNombre);
             limpiarError(inputApellido);
             limpiarError(inputConfirmPassword);
+
+            if (mensajeErrorRegistro !== null) {
+                mensajeErrorRegistro.remove();
+                mensajeErrorRegistro = null;
+            }
 
             let hayErrores = false;
 
@@ -1496,8 +1516,42 @@ if (paginaActual === "registro") {
                 return;
             }
 
-            // Si todo es válido, redirigimos directamente al inicio
-            window.location.href = "index.html";
+            // Armamos el objeto para Supabase sin incluir la contraseña
+            const datosRegistro = {
+                nombre: inputNombre.value.trim(),
+                apellido: inputApellido.value.trim(),
+                email: inputEmailRegistro.value.trim(),
+                telefono: inputTelefonoRegistro.value.trim(),
+                fecha_nacimiento: inputFechaNacimiento.value,
+                newsletter: checkNewsletter.checked
+            };
+
+            btnCrearCuenta.disabled = true;
+            btnCrearCuenta.textContent = "Creando cuenta...";
+
+            try {
+                const res = await fetch(`${SUPABASE_URL}/rest/v1/registros`, {
+                    method: "POST",
+                    headers: headers,
+                    body: JSON.stringify(datosRegistro)
+                });
+
+                if (!res.ok) {
+                    throw new Error(`Error HTTP ${res.status} al guardar el registro`);
+                }
+
+                // Se guardó bien en Supabase: redirigimos directamente al inicio
+                window.location.href = "index.html";
+            } catch (error) {
+                console.error("No se pudo guardar el registro en Supabase:", error);
+                mensajeErrorRegistro = document.createElement("p");
+                mensajeErrorRegistro.classList.add("error-msg");
+                mensajeErrorRegistro.textContent = "No se pudo crear la cuenta en este momento. Por favor, intentá de nuevo más tarde.";
+                formRegistro.after(mensajeErrorRegistro);
+            } finally {
+                btnCrearCuenta.disabled = false;
+                btnCrearCuenta.textContent = "Crear mi cuenta";
+            }
         });
     }
 }
