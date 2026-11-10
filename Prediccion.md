@@ -97,3 +97,5 @@ cetral y footer, sobre una tienda de cartas.
 48.Quiero que todas las fotos y fondos dejan de depender de enlaces de internet externos y pasan a cargarse desde una carpeta local propia (imagenes/), manteniendo el catálogo, el carrito y los detalles viéndose exactamente igual sin enlaces rotos.
 
 49.El catálogo crece de 7 a 17 artículos con sus respectivas páginas de detalle creadas; si un producto no tiene foto asignada, la interfaz muestra un recuadro vacío limpio sin romper el diseño, el buscador ni el carrito.
+
+50.Quiero agregar las fotos de los productos nuevos
