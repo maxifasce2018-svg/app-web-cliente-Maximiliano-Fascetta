@@ -93,3 +93,5 @@ cetral y footer, sobre una tienda de cartas.
 46.Quiero revisar las páginas HTML, styles.css, app.js y Prediccion.md, corregir los errores si encuentra alguno y devuelve un resumen de verificación punto por punto contra el temario.
 
 47.Quiero que cuando el usuario completa el login o el registro sin errores, el navegador lo manda directo a index.html de forma instantánea sin mostrar avisos de éxito intermedios; si los datos están mal, se queda en la página y muestra los errores como siempre.
+
+48.Quiero que todas las fotos y fondos dejan de depender de enlaces de internet externos y pasan a cargarse desde una carpeta local propia (imagenes/), manteniendo el catálogo, el carrito y los detalles viéndose exactamente igual sin enlaces rotos.
