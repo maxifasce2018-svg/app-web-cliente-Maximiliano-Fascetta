@@ -151,7 +151,7 @@ body::before {
     position: fixed;
     top: -50vh; left: -50vw;
     width: 200vw; height: 200vh;
-    background-image: url('https://cdn.pixabay.com/photo/2016/07/23/13/18/pokemon-1536847_640.png');
+    background-image: url('imagenes/fondo-pokemon.png');
     background-size: 150px 150px;
     background-repeat: repeat;
     opacity: 0.04; /* Muy transparente para no molestar */
@@ -491,7 +491,7 @@ a:hover {
 .hero-banner {
     min-height: 80vh; /* Más alto para mayor impacto visual */
     background: linear-gradient(135deg, rgba(26, 26, 46, 0.75) 0%, rgba(15, 52, 96, 0.8) 100%),
-                url('https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=1920') center / cover no-repeat;
+                url('imagenes/hero-fondo.jpg') center / cover no-repeat;
     display: flex;
     flex-direction: column;
     justify-content: center;
